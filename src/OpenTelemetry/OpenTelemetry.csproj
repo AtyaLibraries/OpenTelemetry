@@ -8,8 +8,9 @@
 
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
+    <MinVerSkip Condition="'$(RepositoryHasGitDirectory)' != 'true' Or '$(AllowPackWithoutGit)' == 'true'">true</MinVerSkip>
     <!-- Local non-git pack fallback only; CI and release workflows pass PackageVersion explicitly. -->
-    <PackageVersion Condition="'$(RepositoryHasGitDirectory)' != 'true' And '$(PackageVersion)' == '' And '$(Version)' == ''">1.0.0</PackageVersion>
+    <PackageVersion Condition="('$(RepositoryHasGitDirectory)' != 'true' Or '$(AllowPackWithoutGit)' == 'true') And '$(PackageVersion)' == '' And '$(Version)' == ''">1.0.0</PackageVersion>
     <!-- Stable 1.0.0 intentionally includes prerelease EF Core and gRPC OpenTelemetry instrumentation dependencies. -->
     <NoWarn>$(NoWarn);NU5104</NoWarn>
     <!-- Set PackageValidationBaselineVersion after 1.0.0 is published. -->
@@ -22,8 +23,8 @@
 
   <ItemGroup Label="Analyzers + versioning (build-only, not published)">
     <PackageReference Include="Atya.Governance.CodeQuality" PrivateAssets="all" />
-    <PackageReference Include="MinVer" PrivateAssets="all" Condition="'$(RepositoryHasGitDirectory)' == 'true'" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" Condition="'$(RepositoryHasGitDirectory)' == 'true'" />
+    <PackageReference Include="MinVer" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
