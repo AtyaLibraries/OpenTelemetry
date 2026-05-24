@@ -87,6 +87,7 @@ public class OpenTelemetryRegistrationBenchmarks
         options.Instrumentations.AspNetCore.Enabled = true;
         options.Instrumentations.HttpClient.Enabled = true;
         options.Instrumentations.Runtime.Enabled = true;
+        options.Exporters.Console.Enabled = true;
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
         options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;

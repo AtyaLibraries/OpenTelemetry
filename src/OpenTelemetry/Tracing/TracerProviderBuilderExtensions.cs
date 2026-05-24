@@ -92,6 +92,11 @@ internal static class TracerProviderBuilderExtensions
         this TracerProviderBuilder builder,
         OpenTelemetryExporterOptions exporters)
     {
+        if (exporters.Console.Enabled)
+        {
+            _ = builder.AddConsoleExporter();
+        }
+
         if (exporters.Otlp.Enabled)
         {
             _ = builder.AddOtlpExporter(otlp => OtlpExporterConfigurator.Apply(otlp, exporters.Otlp));
