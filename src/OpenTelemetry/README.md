@@ -37,6 +37,7 @@ services.AddAtyaOpenTelemetry(options =>
     options.Instrumentations.GrpcClient.Enabled = true;
     options.Instrumentations.Runtime.Enabled = true;
 
+    options.Exporters.Console.Enabled = true;
     options.Exporters.Otlp.Enabled = true;
     options.Exporters.Otlp.Endpoint = "http://otel-collector:4317";
     options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
@@ -79,6 +80,9 @@ Bind from the default `OpenTelemetry` configuration section:
       "Runtime": { "Enabled": true }
     },
     "Exporters": {
+      "Console": {
+        "Enabled": true
+      },
       "Otlp": {
         "Enabled": true,
         "Endpoint": "http://otel-collector:4317",
@@ -113,7 +117,7 @@ services.AddAtyaOpenTelemetry(configuration, "Diagnostics:OpenTelemetry");
 - Configure the package through the delegate or configuration section passed to `AddAtyaOpenTelemetry`; later `services.Configure<OpenTelemetryOptions>(...)` calls do not rebuild the OpenTelemetry tracing or metrics providers.
 - Tracing and metrics are enabled by default.
 - Observation-layer logging is disabled by default.
-- ASP.NET Core, HttpClient, Runtime, and OTLP exporter registrations are opt-in.
+- ASP.NET Core, HttpClient, Runtime, console exporter, and OTLP exporter registrations are opt-in.
 - SqlClient, Entity Framework Core, and gRPC client instrumentations are opt-in.
 - SQL command text capture is disabled by default because command text can contain sensitive data.
 - The package composes `Atya.Diagnostics.Observation`; it does not define business metrics, activity names, or log catalogs.
@@ -153,6 +157,7 @@ Leave SQL text capture disabled unless queries are known not to contain secrets 
 
 | Exporter | Toggle | Configuration |
 | -------- | ------ | ------------- |
+| Console | `Exporters.Console.Enabled` | `Enabled` |
 | OTLP | `Exporters.Otlp.Enabled` | `Endpoint`, `Protocol`, `Headers` |
 
 ## Package Boundaries

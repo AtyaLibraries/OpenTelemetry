@@ -489,6 +489,7 @@ public sealed class OpenTelemetryInternalTests
         options.Instrumentations.EntityFrameworkCore.CaptureSqlText = true;
         options.Instrumentations.GrpcClient.Enabled = true;
         options.Instrumentations.Runtime.Enabled = true;
+        options.Exporters.Console.Enabled = true;
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
         options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;

@@ -194,6 +194,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
             options.EnableObservationLogging = true;
             options.ActivitySources.Add("Orders.Workflows");
             options.Meters.Add("Orders.Business");
+            options.Exporters.Console.Enabled = true;
             options.Exporters.Otlp.Enabled = true;
             options.Exporters.Otlp.Endpoint = "http://localhost:4317";
             options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
@@ -217,6 +218,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
         _ = resolvedOptions.EnableObservationLogging.Should().BeTrue();
         _ = resolvedOptions.ActivitySources.Should().ContainSingle("Orders.Workflows");
         _ = resolvedOptions.Meters.Should().ContainSingle("Orders.Business");
+        _ = resolvedOptions.Exporters.Console.Enabled.Should().BeTrue();
         _ = resolvedOptions.Exporters.Otlp.Enabled.Should().BeTrue();
         _ = resolvedOptions.Exporters.Otlp.Endpoint.Should().Be("http://localhost:4317");
         _ = resolvedOptions.Exporters.Otlp.Protocol.Should().Be(OtlpExportProtocol.Grpc);
@@ -248,6 +250,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
                 ["OpenTelemetry:Instrumentations:EntityFrameworkCore:Enabled"] = "true",
                 ["OpenTelemetry:Instrumentations:EntityFrameworkCore:CaptureSqlText"] = "true",
                 ["OpenTelemetry:Instrumentations:GrpcClient:Enabled"] = "true",
+                ["OpenTelemetry:Exporters:Console:Enabled"] = "true",
                 ["OpenTelemetry:Exporters:Otlp:Enabled"] = "true",
                 ["OpenTelemetry:Exporters:Otlp:Endpoint"] = "http://collector:4317",
                 ["OpenTelemetry:Exporters:Otlp:Protocol"] = "HttpProtobuf",
@@ -272,6 +275,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
         _ = resolvedOptions.Instrumentations.EntityFrameworkCore.Enabled.Should().BeTrue();
         _ = resolvedOptions.Instrumentations.EntityFrameworkCore.CaptureSqlText.Should().BeTrue();
         _ = resolvedOptions.Instrumentations.GrpcClient.Enabled.Should().BeTrue();
+        _ = resolvedOptions.Exporters.Console.Enabled.Should().BeTrue();
         _ = resolvedOptions.Exporters.Otlp.Enabled.Should().BeTrue();
         _ = resolvedOptions.Exporters.Otlp.Endpoint.Should().Be("http://collector:4317");
         _ = resolvedOptions.Exporters.Otlp.Protocol.Should().Be(OtlpExportProtocol.HttpProtobuf);
@@ -323,6 +327,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
         _ = options.Instrumentations.EntityFrameworkCore.CaptureSqlText.Should().BeFalse();
         _ = options.Instrumentations.GrpcClient.Enabled.Should().BeFalse();
         _ = options.Instrumentations.Runtime.Enabled.Should().BeFalse();
+        _ = options.Exporters.Console.Enabled.Should().BeFalse();
         _ = options.Exporters.Otlp.Enabled.Should().BeFalse();
         _ = options.Exporters.Otlp.Endpoint.Should().BeNull();
         _ = options.Exporters.Otlp.Protocol.Should().BeNull();

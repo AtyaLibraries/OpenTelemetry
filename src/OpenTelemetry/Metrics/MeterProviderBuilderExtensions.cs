@@ -74,6 +74,11 @@ internal static class MeterProviderBuilderExtensions
         this MeterProviderBuilder builder,
         OpenTelemetryExporterOptions exporters)
     {
+        if (exporters.Console.Enabled)
+        {
+            _ = builder.AddConsoleExporter();
+        }
+
         if (exporters.Otlp.Enabled)
         {
             _ = builder.AddOtlpExporter(otlp => OtlpExporterConfigurator.Apply(otlp, exporters.Otlp));
