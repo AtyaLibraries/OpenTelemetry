@@ -1,0 +1,13 @@
+# Every PR gets a default review from the package owners.
+*                                       @Atya/maintainers
+
+# Build, CI, and release tooling - stricter review.
+/build/                                 @Atya/maintainers
+/.github/                               @Atya/maintainers
+/Directory.Build.props                  @Atya/maintainers
+/Directory.Build.targets                @Atya/maintainers
+/Directory.Packages.props               @Atya/maintainers
+/global.json                            @Atya/maintainers
+
+# Public API changes - require a maintainer sign-off.
+/src/**/PublicAPI.*.txt                 @Atya/maintainers

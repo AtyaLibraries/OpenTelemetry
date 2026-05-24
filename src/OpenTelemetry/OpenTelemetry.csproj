@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Atya.Diagnostics.OpenTelemetry</AssemblyName>
+    <PackageId>Atya.Diagnostics.OpenTelemetry</PackageId>
+    <RootNamespace>Atya.Diagnostics.OpenTelemetry</RootNamespace>
+    <IsPackable>true</IsPackable>
+
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
+    <!-- Local non-git pack fallback only; CI and release workflows pass PackageVersion explicitly. -->
+    <PackageVersion Condition="'$(RepositoryHasGitDirectory)' != 'true' And '$(PackageVersion)' == '' And '$(Version)' == ''">1.0.0</PackageVersion>
+    <!-- Stable 1.0.0 intentionally includes prerelease EF Core and gRPC OpenTelemetry instrumentation dependencies. -->
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+    <!-- Set PackageValidationBaselineVersion after 1.0.0 is published. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup Label="Analyzers + versioning (build-only, not published)">
+    <PackageReference Include="Atya.Governance.CodeQuality" PrivateAssets="all" />
+    <PackageReference Include="MinVer" PrivateAssets="all" Condition="'$(RepositoryHasGitDirectory)' == 'true'" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" Condition="'$(RepositoryHasGitDirectory)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Atya.Diagnostics.Observation" />
+    <PackageReference Include="Atya.Foundation.Guards" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" />
+  </ItemGroup>
+
+</Project>
