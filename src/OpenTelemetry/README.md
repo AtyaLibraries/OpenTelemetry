@@ -16,6 +16,7 @@ dotnet add package Atya.Diagnostics.OpenTelemetry
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Exporter;
 
 services.AddAtyaOpenTelemetry(options =>
 {
@@ -38,7 +39,7 @@ services.AddAtyaOpenTelemetry(options =>
 
     options.Exporters.Otlp.Enabled = true;
     options.Exporters.Otlp.Endpoint = "http://otel-collector:4317";
-    options.Exporters.Otlp.Protocol = "grpc";
+    options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
 });
 ```
 
@@ -81,7 +82,7 @@ Bind from the default `OpenTelemetry` configuration section:
       "Otlp": {
         "Enabled": true,
         "Endpoint": "http://otel-collector:4317",
-        "Protocol": "grpc",
+        "Protocol": "Grpc",
         "Headers": {
           "x-service": "orders"
         }
@@ -124,7 +125,7 @@ Options are validated through `Microsoft.Extensions.Options`. Invalid options fa
 - `ServiceName` cannot be null, empty, or whitespace.
 - `ActivitySources` and `Meters` cannot contain null, empty, or whitespace names.
 - OTLP `Endpoint`, when set, must be an absolute URI.
-- OTLP `Protocol`, when set, must be `grpc` or `http/protobuf`.
+- OTLP `Protocol`, when set, must be a defined `OtlpExportProtocol` value such as `Grpc` or `HttpProtobuf`.
 - OTLP header names cannot be empty and cannot contain `,` or `=`.
 - OTLP header values cannot be null and cannot contain `,`.
 

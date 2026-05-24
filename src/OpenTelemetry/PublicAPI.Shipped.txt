@@ -58,7 +58,7 @@ Atya.Diagnostics.OpenTelemetry.Options.OtlpOptions.Endpoint.get -> string?
 Atya.Diagnostics.OpenTelemetry.Options.OtlpOptions.Endpoint.set -> void
 Atya.Diagnostics.OpenTelemetry.Options.OtlpOptions.Headers.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Atya.Diagnostics.OpenTelemetry.Options.OtlpOptions.OtlpOptions() -> void
-Atya.Diagnostics.OpenTelemetry.Options.OtlpOptions.Protocol.get -> string?
+*REMOVED*Atya.Diagnostics.OpenTelemetry.Options.OtlpOptions.Protocol.get -> string?
 Atya.Diagnostics.OpenTelemetry.Options.OtlpOptions.Protocol.set -> void
 static Microsoft.Extensions.DependencyInjection.OpenTelemetryServiceCollectionExtensions.AddAtyaOpenTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, string! sectionName = "OpenTelemetry") -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.OpenTelemetryServiceCollectionExtensions.AddAtyaOpenTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

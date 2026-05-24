@@ -24,7 +24,7 @@ public sealed class OpenTelemetryInternalTests
         var options = new OtlpOptions
         {
             Endpoint = "http://localhost:4317",
-            Protocol = "grpc",
+            Protocol = OtlpExportProtocol.Grpc,
         };
         options.Headers["authorization"] = "Bearer token";
         options.Headers["tenant"] = "orders";
@@ -42,7 +42,7 @@ public sealed class OpenTelemetryInternalTests
         var otlp = new OtlpExporterOptions();
         var options = new OtlpOptions
         {
-            Protocol = " http/protobuf ",
+            Protocol = OtlpExportProtocol.HttpProtobuf,
         };
 
         OtlpExporterConfigurator.Apply(otlp, options);
@@ -66,34 +66,18 @@ public sealed class OpenTelemetryInternalTests
     }
 
     [Fact]
-    public void OtlpExporterConfigurator_Should_Throw_For_Invalid_Protocol()
+    public void OtlpExporterConfigurator_Should_Throw_For_Undefined_Protocol()
     {
         var otlp = new OtlpExporterOptions();
         var options = new OtlpOptions
         {
-            Protocol = "json",
+            Protocol = (OtlpExportProtocol)42,
         };
 
         var act = () => OtlpExporterConfigurator.Apply(otlp, options);
 
-        _ = act.Should().Throw<ArgumentException>()
-            .WithParameterName("protocol");
-    }
-
-    [Theory]
-    [InlineData(null, true)]
-    [InlineData("", true)]
-    [InlineData("   ", true)]
-    [InlineData("grpc", true)]
-    [InlineData("GRPC", true)]
-    [InlineData("http/protobuf", true)]
-    [InlineData("HTTP/PROTOBUF", true)]
-    [InlineData("http/json", false)]
-    public void OtlpExporterConfigurator_Should_Report_Supported_Protocols(string? protocol, bool expected)
-    {
-        var supported = OtlpExporterConfigurator.IsSupportedProtocol(protocol);
-
-        _ = supported.Should().Be(expected);
+        _ = act.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("options");
     }
 
     [Fact]
@@ -114,7 +98,7 @@ public sealed class OpenTelemetryInternalTests
         var options = CreateValidOptions();
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
-        options.Exporters.Otlp.Protocol = "grpc";
+        options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
         options.Exporters.Otlp.Headers["authorization"] = "Bearer token";
 
         var result = new OpenTelemetryOptionsValidator().Validate(null, options);
@@ -127,7 +111,7 @@ public sealed class OpenTelemetryInternalTests
     {
         var options = CreateValidOptions();
         options.Exporters.Otlp.Endpoint = "not a uri";
-        options.Exporters.Otlp.Protocol = "json";
+        options.Exporters.Otlp.Protocol = (OtlpExportProtocol)42;
         options.Exporters.Otlp.Headers["bad,key"] = "bad,value";
 
         var result = new OpenTelemetryOptionsValidator().Validate(null, options);
@@ -190,7 +174,7 @@ public sealed class OpenTelemetryInternalTests
     {
         var options = CreateValidOptions();
         options.Exporters.Otlp.Enabled = true;
-        options.Exporters.Otlp.Protocol = "json";
+        options.Exporters.Otlp.Protocol = (OtlpExportProtocol)42;
 
         var result = new OpenTelemetryOptionsValidator().Validate(null, options);
 
@@ -507,7 +491,7 @@ public sealed class OpenTelemetryInternalTests
         options.Instrumentations.Runtime.Enabled = true;
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
-        options.Exporters.Otlp.Protocol = "grpc";
+        options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
         return options;
     }
 }

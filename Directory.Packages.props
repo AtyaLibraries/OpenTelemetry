@@ -3,11 +3,13 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
+
   <ItemGroup Label="Versioning + SourceLink (library-side)">
     <PackageVersion Include="Atya.Governance.CodeQuality" Version="1.0.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.300" />
     <PackageVersion Include="MinVer" Version="7.0.0" />
   </ItemGroup>
+
   <ItemGroup Label="Testing">
     <PackageVersion Include="Atya.Governance.Testing" Version="1.0.0" />
     <PackageVersion Include="Castle.Core" Version="5.2.1" />
@@ -24,9 +26,11 @@
     <PackageVersion Include="xunit.analyzers" Version="1.27.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
+
   <ItemGroup Label="Benchmarking">
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
   </ItemGroup>
+
   <ItemGroup Label="Runtime + integrations">
     <PackageVersion Include="Atya.Diagnostics.Observation" Version="1.0.0" />
     <PackageVersion Include="Atya.Foundation.Guards" Version="1.0.0" />

@@ -1,1 +1,2 @@
 #nullable enable
+Atya.Diagnostics.OpenTelemetry.Options.OtlpOptions.Protocol.get -> OpenTelemetry.Exporter.OtlpExportProtocol?

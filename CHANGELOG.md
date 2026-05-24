@@ -6,7 +6,7 @@ This project follows semantic versioning. Release tags use `vMAJOR.MINOR.PATCH`.
 
 ## [Unreleased]
 
-No unreleased changes.
+- Changed `OtlpOptions.Protocol` from a string to the nullable OpenTelemetry `OtlpExportProtocol` enum.
 
 ## [1.0.0] - 2026-05-24
 

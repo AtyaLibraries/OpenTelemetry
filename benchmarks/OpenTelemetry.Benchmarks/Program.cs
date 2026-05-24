@@ -4,6 +4,7 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Exporter;
 
 namespace OpenTelemetry.Benchmarks;
 
@@ -88,7 +89,7 @@ public class OpenTelemetryRegistrationBenchmarks
         options.Instrumentations.Runtime.Enabled = true;
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
-        options.Exporters.Otlp.Protocol = "grpc";
+        options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
         options.Exporters.Otlp.Headers["x-benchmark"] = "opentelemetry";
     }
 }
