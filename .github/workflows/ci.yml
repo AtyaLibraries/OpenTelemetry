@@ -96,9 +96,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         uses: danielpalme/ReportGenerator-GitHub-Action@5.5.0
         with:
-          reports: |
-            artifacts/test-results/**/coverage.cobertura.xml
-            artifacts/coverage/coverage.cobertura.xml
+          reports: artifacts/test-results/**/coverage.cobertura.xml;artifacts/coverage/coverage.cobertura.xml
           targetdir: artifacts/coverage-report
           reporttypes: HtmlInline;MarkdownSummaryGithub;Cobertura
 
