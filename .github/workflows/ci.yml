@@ -34,12 +34,12 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
 
@@ -94,11 +94,9 @@ jobs:
 
       - name: Generate coverage report
         if: matrix.os == 'ubuntu-latest'
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.0
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.10
         with:
-          reports: |
-            artifacts/test-results/**/coverage.cobertura.xml
-            artifacts/coverage/coverage.cobertura.xml
+          reports: artifacts/test-results/**/coverage.cobertura.xml;artifacts/coverage/coverage.cobertura.xml
           targetdir: artifacts/coverage-report
           reporttypes: HtmlInline;MarkdownSummaryGithub;Cobertura
 
