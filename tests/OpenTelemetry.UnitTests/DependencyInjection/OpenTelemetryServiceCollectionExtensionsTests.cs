@@ -7,6 +7,7 @@ using Atya.Diagnostics.Tracing.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Exporter;
 
 namespace OpenTelemetry.UnitTests.DependencyInjection;
 
@@ -195,7 +196,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
             options.Meters.Add("Orders.Business");
             options.Exporters.Otlp.Enabled = true;
             options.Exporters.Otlp.Endpoint = "http://localhost:4317";
-            options.Exporters.Otlp.Protocol = "grpc";
+            options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
             options.Exporters.Otlp.Headers["authorization"] = "Bearer token";
             options.Instrumentations.AspNetCore.Enabled = true;
             options.Instrumentations.HttpClient.Enabled = true;
@@ -218,7 +219,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
         _ = resolvedOptions.Meters.Should().ContainSingle("Orders.Business");
         _ = resolvedOptions.Exporters.Otlp.Enabled.Should().BeTrue();
         _ = resolvedOptions.Exporters.Otlp.Endpoint.Should().Be("http://localhost:4317");
-        _ = resolvedOptions.Exporters.Otlp.Protocol.Should().Be("grpc");
+        _ = resolvedOptions.Exporters.Otlp.Protocol.Should().Be(OtlpExportProtocol.Grpc);
         _ = resolvedOptions.Exporters.Otlp.Headers.Should().ContainKey("authorization");
         _ = resolvedOptions.Instrumentations.AspNetCore.Enabled.Should().BeTrue();
         _ = resolvedOptions.Instrumentations.HttpClient.Enabled.Should().BeTrue();
@@ -249,7 +250,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
                 ["OpenTelemetry:Instrumentations:GrpcClient:Enabled"] = "true",
                 ["OpenTelemetry:Exporters:Otlp:Enabled"] = "true",
                 ["OpenTelemetry:Exporters:Otlp:Endpoint"] = "http://collector:4317",
-                ["OpenTelemetry:Exporters:Otlp:Protocol"] = "http/protobuf",
+                ["OpenTelemetry:Exporters:Otlp:Protocol"] = "HttpProtobuf",
                 ["OpenTelemetry:Exporters:Otlp:Headers:tenant"] = "billing",
             })
             .Build();
@@ -273,7 +274,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
         _ = resolvedOptions.Instrumentations.GrpcClient.Enabled.Should().BeTrue();
         _ = resolvedOptions.Exporters.Otlp.Enabled.Should().BeTrue();
         _ = resolvedOptions.Exporters.Otlp.Endpoint.Should().Be("http://collector:4317");
-        _ = resolvedOptions.Exporters.Otlp.Protocol.Should().Be("http/protobuf");
+        _ = resolvedOptions.Exporters.Otlp.Protocol.Should().Be(OtlpExportProtocol.HttpProtobuf);
         _ = resolvedOptions.Exporters.Otlp.Headers.Should().Contain("tenant", "billing");
     }
 
