@@ -11,9 +11,9 @@ using Microsoft.Extensions.Logging;
 //
 // Demonstrates the full OpenTelemetry telemetry pipeline:
 //   - Resource metadata configuration
-//   - Tracing + Metrics pipelines with console and OTLP export
+//   - Logging + Tracing + Metrics pipelines with console and OTLP export
 //   - ASP.NET Core / HttpClient / Runtime instrumentations
-//   - Using generic Tracing + Metrics building blocks inside the pipeline
+//   - Using generic Logging + Tracing + Metrics building blocks inside the pipeline
 // ------------------------------------------------------------------------
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -30,6 +30,7 @@ _ = builder.Services.AddAtyaOpenTelemetry(options =>
     options.ServiceVersion = "1.0.0";
 
     // Pipeline toggles.
+    options.EnableLogging = true;
     options.EnableTracing = true;
     options.EnableMetrics = true;
     options.EnableObservationLogging = true;
@@ -75,7 +76,7 @@ finally
 
 Console.WriteLine();
 Console.WriteLine("Sample completed. Console exporter output is written while the host stops.");
-Console.WriteLine("With OTLP enabled, traces and metrics are also exported to your collector.");
+Console.WriteLine("logs, traces, and metrics would be exported to your collector.");
 
 // ------------------------------------------------------------------------
 // Sample service that uses all three diagnostics building blocks.

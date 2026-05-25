@@ -2,6 +2,7 @@
 // Copyright (c) Atya. All rights reserved.
 // </copyright>
 using Atya.Diagnostics.OpenTelemetry.Internal;
+using Atya.Diagnostics.OpenTelemetry.Logging;
 using Atya.Diagnostics.OpenTelemetry.Metrics;
 using Atya.Diagnostics.OpenTelemetry.Options;
 using Atya.Diagnostics.OpenTelemetry.Tracing;
@@ -71,6 +72,13 @@ public static class OpenTelemetryServiceCollectionExtensions
 
         // Delegate pipeline configuration to folder-based configurators.
         var otelBuilder = services.AddOpenTelemetry();
+
+        if (bootstrapOptions.EnableLogging)
+        {
+            _ = otelBuilder.WithLogging(
+                logging => logging.ConfigureAtyaLogging(bootstrapOptions, resourceBuilder),
+                loggingOptions => loggingOptions.ConfigureAtyaLogging(bootstrapOptions.Logging));
+        }
 
         if (bootstrapOptions.EnableTracing)
         {

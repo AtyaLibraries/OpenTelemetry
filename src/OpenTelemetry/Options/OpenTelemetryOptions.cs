@@ -30,6 +30,11 @@ public sealed class OpenTelemetryOptions
     public bool EnableMetrics { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether the OpenTelemetry logging pipeline is enabled. Default is <c>false</c>.
+    /// </summary>
+    public bool EnableLogging { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the Atya Observation logging layer is enabled. Default is <c>false</c>.
     /// </summary>
     public bool EnableObservationLogging { get; set; }
@@ -63,6 +68,11 @@ public sealed class OpenTelemetryOptions
     /// Gets instrumentation toggle options.
     /// </summary>
     public OpenTelemetryInstrumentationOptions Instrumentations { get; } = new();
+
+    /// <summary>
+    /// Gets OpenTelemetry logging options.
+    /// </summary>
+    public OpenTelemetryLoggingOptions Logging { get; } = new();
 
     /// <summary>
     /// Gets exporter configuration options.

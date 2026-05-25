@@ -1,16 +1,21 @@
 using System.Data;
 using System.Diagnostics;
 using Atya.Diagnostics.OpenTelemetry.Internal;
+using Atya.Diagnostics.OpenTelemetry.Logging;
 using Atya.Diagnostics.OpenTelemetry.Metrics;
 using Atya.Diagnostics.OpenTelemetry.Options;
 using Atya.Diagnostics.OpenTelemetry.Tracing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using AtyaLoggerProviderBuilderExtensions = Atya.Diagnostics.OpenTelemetry.Logging.LoggerProviderBuilderExtensions;
+using AtyaOpenTelemetryLoggerOptionsExtensions = Atya.Diagnostics.OpenTelemetry.Logging.OpenTelemetryLoggerOptionsExtensions;
 using AtyaTracerProviderBuilderExtensions = Atya.Diagnostics.OpenTelemetry.Tracing.TracerProviderBuilderExtensions;
 
 namespace OpenTelemetry.UnitTests.Internal;
@@ -399,6 +404,73 @@ public sealed class OpenTelemetryInternalTests
             .WithParameterName("resourceBuilder");
         _ = actForInvalidMeter.Should().Throw<ArgumentException>()
             .WithParameterName("meterName");
+    }
+
+    [Fact]
+    public void LoggerProviderBuilderExtensions_Should_Configure_Through_OpenTelemetry_Builder()
+    {
+        var options = CreateFullOptions();
+        var resourceBuilder = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics");
+        var services = new ServiceCollection();
+        var configured = false;
+
+        _ = services.AddOpenTelemetry()
+            .WithLogging(logging =>
+            {
+                var result = logging.ConfigureAtyaLogging(options, resourceBuilder);
+                configured = ReferenceEquals(result, logging);
+            });
+
+        using var provider = services.BuildServiceProvider();
+        var loggerProviders = provider.GetServices<ILoggerProvider>();
+
+        _ = loggerProviders.Should().Contain(loggerProvider => loggerProvider is OpenTelemetryLoggerProvider);
+        _ = configured.Should().BeTrue();
+    }
+
+    [Fact]
+    public void LoggerProviderBuilderExtensions_Should_Throw_When_Builder_Is_Null()
+    {
+        var options = CreateValidOptions();
+        var resourceBuilder = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics");
+
+        var actForNullBuilder = () => AtyaLoggerProviderBuilderExtensions.ConfigureAtyaLogging(null!, options, resourceBuilder);
+
+        _ = actForNullBuilder.Should().Throw<ArgumentNullException>()
+            .WithParameterName("builder");
+    }
+
+    [Fact]
+    public void OpenTelemetryLoggerOptionsExtensions_Should_Apply_Log_Record_Options()
+    {
+        var loggerOptions = new OpenTelemetryLoggerOptions();
+        var options = new OpenTelemetryLoggingOptions
+        {
+            IncludeFormattedMessage = false,
+            IncludeScopes = false,
+            ParseStateValues = false,
+        };
+
+        var result = loggerOptions.ConfigureAtyaLogging(options);
+
+        _ = result.Should().BeSameAs(loggerOptions);
+        _ = loggerOptions.IncludeFormattedMessage.Should().BeFalse();
+        _ = loggerOptions.IncludeScopes.Should().BeFalse();
+        _ = loggerOptions.ParseStateValues.Should().BeFalse();
+    }
+
+    [Fact]
+    public void OpenTelemetryLoggerOptionsExtensions_Should_Throw_When_Arguments_Are_Null()
+    {
+        var loggerOptions = new OpenTelemetryLoggerOptions();
+
+        var actForNullOptions = () => loggerOptions.ConfigureAtyaLogging(null!);
+        var actForNullLoggerOptions = () => AtyaOpenTelemetryLoggerOptionsExtensions.ConfigureAtyaLogging(null!, new OpenTelemetryLoggingOptions());
+
+        _ = actForNullOptions.Should().Throw<ArgumentNullException>()
+            .WithParameterName("options");
+        _ = actForNullLoggerOptions.Should().Throw<ArgumentNullException>()
+            .WithParameterName("loggerOptions");
     }
 
     [Fact]

@@ -9,7 +9,7 @@ namespace Atya.Diagnostics.OpenTelemetry.Internal;
 
 /// <summary>
 /// Applies <see cref="OtlpOptions"/> configuration to the underlying OpenTelemetry <see cref="OtlpExporterOptions"/>.
-/// Shared between tracing and metrics pipelines.
+/// Shared between logging, tracing, and metrics pipelines.
 /// </summary>
 internal static class OtlpExporterConfigurator
 {
