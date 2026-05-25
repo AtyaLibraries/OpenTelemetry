@@ -1,6 +1,6 @@
 # Atya.Diagnostics.OpenTelemetry
 
-`Atya.Diagnostics.OpenTelemetry` is the host-facing OpenTelemetry integration package for Atya diagnostics libraries. It wires OpenTelemetry tracing and metrics, Atya service identity, resource metadata, optional instrumentations, and OTLP export through one dependency-injection entry point.
+`Atya.Diagnostics.OpenTelemetry` is the host-facing OpenTelemetry integration package for Atya diagnostics libraries. It wires OpenTelemetry logging, tracing, and metrics, Atya service identity, resource metadata, optional instrumentations, and OTLP export through one dependency-injection entry point.
 
 ## Supported Framework
 
@@ -22,6 +22,7 @@ services.AddAtyaOpenTelemetry(options =>
 {
     options.ServiceName = "Orders.Service";
     options.ServiceVersion = "1.0.0";
+    options.EnableLogging = true;
     options.ActivitySources.Add("Orders.Workflows");
     options.Meters.Add("Orders.Business");
 
@@ -53,6 +54,7 @@ Bind from the default `OpenTelemetry` configuration section:
   "OpenTelemetry": {
     "ServiceName": "Orders.Service",
     "ServiceVersion": "1.0.0",
+    "EnableLogging": true,
     "EnableTracing": true,
     "EnableMetrics": true,
     "EnableObservationLogging": false,
@@ -64,6 +66,11 @@ Bind from the default `OpenTelemetry` configuration section:
       "Attributes": {
         "team": "platform"
       }
+    },
+    "Logging": {
+      "IncludeFormattedMessage": true,
+      "IncludeScopes": true,
+      "ParseStateValues": true
     },
     "Instrumentations": {
       "AspNetCore": { "Enabled": true },
@@ -114,9 +121,11 @@ services.AddAtyaOpenTelemetry(configuration, "Diagnostics:OpenTelemetry");
 - `ActivitySources` adds extra application `ActivitySource` names beyond the package default.
 - `Meters` adds extra application `Meter` names beyond the package default.
 - Options passed to `AddAtyaOpenTelemetry` are validated immediately because the OpenTelemetry providers are configured during service registration.
-- Configure the package through the delegate or configuration section passed to `AddAtyaOpenTelemetry`; later `services.Configure<OpenTelemetryOptions>(...)` calls do not rebuild the OpenTelemetry tracing or metrics providers.
+- Configure the package through the delegate or configuration section passed to `AddAtyaOpenTelemetry`; later `services.Configure<OpenTelemetryOptions>(...)` calls do not rebuild the OpenTelemetry logging, tracing, or metrics providers.
 - Tracing and metrics are enabled by default.
+- OpenTelemetry logging is disabled by default. Set `EnableLogging` to `true` to register the OpenTelemetry logging provider and export logs through configured exporters.
 - Observation-layer logging is disabled by default.
+- `EnableObservationLogging` registers Atya Observation logging services; it does not by itself register the OpenTelemetry logging provider.
 - ASP.NET Core, HttpClient, Runtime, console exporter, and OTLP exporter registrations are opt-in.
 - SqlClient, Entity Framework Core, and gRPC client instrumentations are opt-in.
 - SQL command text capture is disabled by default because command text can contain sensitive data.
@@ -158,7 +167,7 @@ Leave SQL text capture disabled unless queries are known not to contain secrets 
 | Exporter | Toggle | Configuration |
 | -------- | ------ | ------------- |
 | Console | `Exporters.Console.Enabled` | `Enabled` |
-| OTLP | `Exporters.Otlp.Enabled` | `Endpoint`, `Protocol`, `Headers` |
+| OTLP | `Exporters.Otlp.Enabled` | `Endpoint`, `Protocol`, `Headers` for enabled logging, tracing, and metrics pipelines |
 
 ## Package Boundaries
 
