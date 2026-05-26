@@ -35,13 +35,26 @@ public sealed class OpenTelemetryOptions
     public bool EnableMetrics { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether the OpenTelemetry logging pipeline is enabled. Default is <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// Independent of <see cref="EnableObservationLogging"/>, which only
+    /// registers the in-process Atya.Diagnostics.Logging helpers (scope
+    /// factories, structured property helpers) and does NOT export logs
+    /// anywhere. EnableLogging controls the OpenTelemetry SDK LoggerProvider
+    /// pipeline (OTLP / Console export).
+    /// </remarks>
+    public bool EnableLogging { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the Atya Observation logging layer is enabled. Default is <c>false</c>.
     /// </summary>
     /// <remarks>
-    /// Independent of <c>EnableLogging</c>, which controls the OpenTelemetry
-    /// SDK LoggerProvider pipeline (OTLP / Console export). EnableObservationLogging
-    /// only registers the in-process Atya.Diagnostics.Logging helpers
-    /// (scope factories, structured property helpers) and does NOT export logs anywhere.
+    /// Independent of <see cref="EnableLogging"/>, which controls the
+    /// OpenTelemetry SDK LoggerProvider pipeline (OTLP / Console export).
+    /// EnableObservationLogging only registers the in-process
+    /// Atya.Diagnostics.Logging helpers (scope factories, structured property
+    /// helpers) and does NOT export logs anywhere.
     /// </remarks>
     public bool EnableObservationLogging { get; set; }
 
@@ -64,6 +77,11 @@ public sealed class OpenTelemetryOptions
     /// Gets instrumentation toggle options.
     /// </summary>
     public OpenTelemetryInstrumentationOptions Instrumentations { get; } = new();
+
+    /// <summary>
+    /// Gets OpenTelemetry logging options.
+    /// </summary>
+    public OpenTelemetryLoggingOptions Logging { get; } = new();
 
     /// <summary>
     /// Gets exporter configuration options.

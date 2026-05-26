@@ -1,2 +1,19 @@
 #nullable enable
+Atya.Diagnostics.OpenTelemetry.Options.ConsoleOptions
+Atya.Diagnostics.OpenTelemetry.Options.ConsoleOptions.ConsoleOptions() -> void
+Atya.Diagnostics.OpenTelemetry.Options.ConsoleOptions.Enabled.get -> bool
+Atya.Diagnostics.OpenTelemetry.Options.ConsoleOptions.Enabled.set -> void
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryExporterOptions.Console.get -> Atya.Diagnostics.OpenTelemetry.Options.ConsoleOptions!
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryLoggingOptions
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryLoggingOptions.IncludeFormattedMessage.get -> bool
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryLoggingOptions.IncludeFormattedMessage.set -> void
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryLoggingOptions.IncludeScopes.get -> bool
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryLoggingOptions.IncludeScopes.set -> void
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryLoggingOptions.OpenTelemetryLoggingOptions() -> void
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryLoggingOptions.ParseStateValues.get -> bool
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryLoggingOptions.ParseStateValues.set -> void
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.EnableLogging.get -> bool
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.EnableLogging.set -> void
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.Logging.get -> Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryLoggingOptions!
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.Observation.get -> Atya.Diagnostics.Observation.Options.ObservationOptions!
+Atya.Diagnostics.OpenTelemetry.Options.OtlpOptions.Protocol.get -> OpenTelemetry.Exporter.OtlpExportProtocol?

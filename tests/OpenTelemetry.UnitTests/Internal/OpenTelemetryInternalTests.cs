@@ -1,17 +1,22 @@
 using System.Data;
 using System.Diagnostics;
 using Atya.Diagnostics.OpenTelemetry.Internal;
+using Atya.Diagnostics.OpenTelemetry.Logging;
 using Atya.Diagnostics.OpenTelemetry.Metrics;
 using Atya.Diagnostics.OpenTelemetry.Options;
 using Atya.Diagnostics.OpenTelemetry.Tracing;
 using Atya.Diagnostics.Observation.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using AtyaLoggerProviderBuilderExtensions = Atya.Diagnostics.OpenTelemetry.Logging.LoggerProviderBuilderExtensions;
+using AtyaOpenTelemetryLoggerOptionsExtensions = Atya.Diagnostics.OpenTelemetry.Logging.OpenTelemetryLoggerOptionsExtensions;
 using AtyaTracerProviderBuilderExtensions = Atya.Diagnostics.OpenTelemetry.Tracing.TracerProviderBuilderExtensions;
 
 namespace OpenTelemetry.UnitTests.Internal;
@@ -25,7 +30,7 @@ public sealed class OpenTelemetryInternalTests
         var options = new OtlpOptions
         {
             Endpoint = "http://localhost:4317",
-            Protocol = "grpc",
+            Protocol = OtlpExportProtocol.Grpc,
         };
         options.Headers["authorization"] = "Bearer token";
         options.Headers["tenant"] = "orders";
@@ -43,7 +48,7 @@ public sealed class OpenTelemetryInternalTests
         var otlp = new OtlpExporterOptions();
         var options = new OtlpOptions
         {
-            Protocol = " http/protobuf ",
+            Protocol = OtlpExportProtocol.HttpProtobuf,
         };
 
         OtlpExporterConfigurator.Apply(otlp, options);
@@ -67,34 +72,18 @@ public sealed class OpenTelemetryInternalTests
     }
 
     [Fact]
-    public void OtlpExporterConfigurator_Should_Throw_For_Invalid_Protocol()
+    public void OtlpExporterConfigurator_Should_Throw_For_Undefined_Protocol()
     {
         var otlp = new OtlpExporterOptions();
         var options = new OtlpOptions
         {
-            Protocol = "json",
+            Protocol = (OtlpExportProtocol)42,
         };
 
         var act = () => OtlpExporterConfigurator.Apply(otlp, options);
 
-        _ = act.Should().Throw<ArgumentException>()
-            .WithParameterName("protocol");
-    }
-
-    [Theory]
-    [InlineData(null, true)]
-    [InlineData("", true)]
-    [InlineData("   ", true)]
-    [InlineData("grpc", true)]
-    [InlineData("GRPC", true)]
-    [InlineData("http/protobuf", true)]
-    [InlineData("HTTP/PROTOBUF", true)]
-    [InlineData("http/json", false)]
-    public void OtlpExporterConfigurator_Should_Report_Supported_Protocols(string? protocol, bool expected)
-    {
-        var supported = OtlpExporterConfigurator.IsSupportedProtocol(protocol);
-
-        _ = supported.Should().Be(expected);
+        _ = act.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("options");
     }
 
     [Fact]
@@ -115,7 +104,7 @@ public sealed class OpenTelemetryInternalTests
         var options = CreateValidOptions();
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
-        options.Exporters.Otlp.Protocol = "grpc";
+        options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
         options.Exporters.Otlp.Headers["authorization"] = "Bearer token";
 
         var result = new OpenTelemetryOptionsValidator().Validate(null, options);
@@ -128,7 +117,7 @@ public sealed class OpenTelemetryInternalTests
     {
         var options = CreateValidOptions();
         options.Exporters.Otlp.Endpoint = "not a uri";
-        options.Exporters.Otlp.Protocol = "json";
+        options.Exporters.Otlp.Protocol = (OtlpExportProtocol)42;
         options.Exporters.Otlp.Headers["bad,key"] = "bad,value";
 
         var result = new OpenTelemetryOptionsValidator().Validate(null, options);
@@ -160,7 +149,7 @@ public sealed class OpenTelemetryInternalTests
         options.Meters.Add("");
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "not a uri";
-        options.Exporters.Otlp.Protocol = "json";
+        options.Exporters.Otlp.Protocol = (OtlpExportProtocol)42;
         options.Exporters.Otlp.Headers["bad,key"] = "bad,value";
         options.Exporters.Otlp.Headers["missing-value"] = null!;
 
@@ -171,7 +160,7 @@ public sealed class OpenTelemetryInternalTests
         _ = result.Failures.Should().Contain("OpenTelemetryOptions.ActivitySources cannot contain a null or whitespace name.");
         _ = result.Failures.Should().Contain("OpenTelemetryOptions.Meters cannot contain a null or whitespace name.");
         _ = result.Failures.Should().Contain(failure => failure.Contains("OpenTelemetryOptions.Exporters.Otlp.Endpoint", StringComparison.Ordinal));
-        _ = result.Failures.Should().Contain("OpenTelemetryOptions.Exporters.Otlp.Protocol must be either 'grpc' or 'http/protobuf'.");
+        _ = result.Failures.Should().Contain("OpenTelemetryOptions.Exporters.Otlp.Protocol must be a defined OtlpExportProtocol value.");
         _ = result.Failures.Should().Contain("OpenTelemetryOptions.Exporters.Otlp.Headers header names cannot contain ',' or '='.");
         _ = result.Failures.Should().Contain("OpenTelemetryOptions.Exporters.Otlp.Headers header values cannot contain ','.");
         _ = result.Failures.Should().Contain("OpenTelemetryOptions.Exporters.Otlp.Headers cannot contain a null header value.");
@@ -217,7 +206,7 @@ public sealed class OpenTelemetryInternalTests
     {
         var options = CreateValidOptions();
         options.Exporters.Otlp.Enabled = true;
-        options.Exporters.Otlp.Protocol = "json";
+        options.Exporters.Otlp.Protocol = (OtlpExportProtocol)42;
 
         var result = new OpenTelemetryOptionsValidator().Validate(null, options);
 
@@ -450,6 +439,73 @@ public sealed class OpenTelemetryInternalTests
     }
 
     [Fact]
+    public void LoggerProviderBuilderExtensions_Should_Configure_Through_OpenTelemetry_Builder()
+    {
+        var options = CreateFullOptions();
+        var resourceBuilder = CreateResourceBuilder(options);
+        var services = new ServiceCollection();
+        var configured = false;
+
+        _ = services.AddOpenTelemetry()
+            .WithLogging(logging =>
+            {
+                var result = logging.ConfigureAtyaLogging(options, resourceBuilder);
+                configured = ReferenceEquals(result, logging);
+            });
+
+        using var provider = services.BuildServiceProvider();
+        var loggerProviders = provider.GetServices<ILoggerProvider>();
+
+        _ = loggerProviders.Should().Contain(loggerProvider => loggerProvider is OpenTelemetryLoggerProvider);
+        _ = configured.Should().BeTrue();
+    }
+
+    [Fact]
+    public void LoggerProviderBuilderExtensions_Should_Throw_When_Builder_Is_Null()
+    {
+        var options = CreateValidOptions();
+        var resourceBuilder = CreateResourceBuilder(options);
+
+        var actForNullBuilder = () => AtyaLoggerProviderBuilderExtensions.ConfigureAtyaLogging(null!, options, resourceBuilder);
+
+        _ = actForNullBuilder.Should().Throw<ArgumentNullException>()
+            .WithParameterName("builder");
+    }
+
+    [Fact]
+    public void OpenTelemetryLoggerOptionsExtensions_Should_Apply_Log_Record_Options()
+    {
+        var loggerOptions = new OpenTelemetryLoggerOptions();
+        var options = new OpenTelemetryLoggingOptions
+        {
+            IncludeFormattedMessage = false,
+            IncludeScopes = false,
+            ParseStateValues = false,
+        };
+
+        var result = loggerOptions.ConfigureAtyaLogging(options);
+
+        _ = result.Should().BeSameAs(loggerOptions);
+        _ = loggerOptions.IncludeFormattedMessage.Should().BeFalse();
+        _ = loggerOptions.IncludeScopes.Should().BeFalse();
+        _ = loggerOptions.ParseStateValues.Should().BeFalse();
+    }
+
+    [Fact]
+    public void OpenTelemetryLoggerOptionsExtensions_Should_Throw_When_Arguments_Are_Null()
+    {
+        var loggerOptions = new OpenTelemetryLoggerOptions();
+
+        var actForNullOptions = () => loggerOptions.ConfigureAtyaLogging(null!);
+        var actForNullLoggerOptions = () => AtyaOpenTelemetryLoggerOptionsExtensions.ConfigureAtyaLogging(null!, new OpenTelemetryLoggingOptions());
+
+        _ = actForNullOptions.Should().Throw<ArgumentNullException>()
+            .WithParameterName("options");
+        _ = actForNullLoggerOptions.Should().Throw<ArgumentNullException>()
+            .WithParameterName("loggerOptions");
+    }
+
+    [Fact]
     public void DatabaseInstrumentationEnricher_Should_Add_Query_Text_Tags_From_Database_Command()
     {
         using var activity = new Activity("database").Start();
@@ -547,9 +603,10 @@ public sealed class OpenTelemetryInternalTests
         options.Instrumentations.EntityFrameworkCore.CaptureSqlText = true;
         options.Instrumentations.GrpcClient.Enabled = true;
         options.Instrumentations.Runtime.Enabled = true;
+        options.Exporters.Console.Enabled = true;
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
-        options.Exporters.Otlp.Protocol = "grpc";
+        options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
         return options;
     }
 }

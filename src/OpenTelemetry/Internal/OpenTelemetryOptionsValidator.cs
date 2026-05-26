@@ -4,6 +4,7 @@
 using Atya.Diagnostics.OpenTelemetry.Options;
 using Atya.Foundation.Guards;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Exporter;
 
 namespace Atya.Diagnostics.OpenTelemetry.Internal;
 
@@ -33,9 +34,10 @@ internal sealed class OpenTelemetryOptionsValidator : IValidateOptions<OpenTelem
                     $"OpenTelemetryOptions.Exporters.Otlp.Endpoint '{options.Exporters.Otlp.Endpoint}' is not a valid absolute URI.");
             }
 
-            if (!OtlpExporterConfigurator.IsSupportedProtocol(options.Exporters.Otlp.Protocol))
+            if (options.Exporters.Otlp.Protocol is { } protocol &&
+                !Enum.IsDefined(typeof(OtlpExportProtocol), protocol))
             {
-                failures.Add("OpenTelemetryOptions.Exporters.Otlp.Protocol must be either 'grpc' or 'http/protobuf'.");
+                failures.Add("OpenTelemetryOptions.Exporters.Otlp.Protocol must be a defined OtlpExportProtocol value.");
             }
 
             foreach (var header in options.Exporters.Otlp.Headers)

@@ -19,6 +19,7 @@ public sealed class OpenTelemetryHostIntegrationTests
             options.Resource.ServiceNamespace = "orders";
             options.Resource.DeploymentEnvironment = "test";
             options.Resource.Attributes["team"] = "platform";
+            options.EnableLogging = true;
             options.Instrumentations.HttpClient.Enabled = true;
             options.Instrumentations.Runtime.Enabled = true;
         });
@@ -29,6 +30,9 @@ public sealed class OpenTelemetryHostIntegrationTests
         try
         {
             var hostedServices = host.Services.GetServices<IHostedService>().ToArray();
+            var logger = host.Services.GetRequiredService<ILogger<OpenTelemetryHostIntegrationTests>>();
+
+            logger.LogInformation("OpenTelemetry logging pipeline started.");
 
             _ = hostedServices.Should().NotBeEmpty();
         }
