@@ -3,6 +3,7 @@ using Atya.Diagnostics.Metrics.Tags;
 using Atya.Diagnostics.Tracing.Abstractions;
 using Atya.Diagnostics.Tracing.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 // ------------------------------------------------------------------------
@@ -10,24 +11,26 @@ using Microsoft.Extensions.Logging;
 //
 // Demonstrates the full OpenTelemetry telemetry pipeline:
 //   - Resource metadata configuration
-//   - Tracing + Metrics pipelines with OTLP export
+//   - Logging + Tracing + Metrics pipelines with console and OTLP export
 //   - ASP.NET Core / HttpClient / Runtime instrumentations
-//   - Using generic Tracing + Metrics building blocks inside the pipeline
+//   - Using generic Logging + Tracing + Metrics building blocks inside the pipeline
 // ------------------------------------------------------------------------
 
-var services = new ServiceCollection();
+var builder = Host.CreateApplicationBuilder(args);
 
 // Register console logging so we can see log output.
-services.AddLogging(logging => logging.AddConsole());
+_ = builder.Logging.ClearProviders();
+_ = builder.Logging.AddConsole();
 
 // Register the full telemetry pipeline.
-services.AddAtyaOpenTelemetry(options =>
+_ = builder.Services.AddAtyaOpenTelemetry(options =>
 {
     // Service identity (required).
-    options.ServiceName = "Samples.OrderProcessor";
-    options.ServiceVersion = "1.0.0";
+    options.Observation.ServiceName = "Samples.OrderProcessor";
+    options.Observation.ServiceVersion = "1.0.0";
 
     // Pipeline toggles.
+    options.EnableLogging = true;
     options.EnableTracing = true;
     options.EnableMetrics = true;
     options.EnableObservationLogging = true;
@@ -42,27 +45,38 @@ services.AddAtyaOpenTelemetry(options =>
     options.Instrumentations.AspNetCore.Enabled = true;
     options.Instrumentations.Runtime.Enabled = true;
 
-    // OTLP exporter (point to your collector).
-    options.Exporters.Otlp.Enabled = true;
+    // Console exporter is handy while developing locally.
+    options.Exporters.Console.Enabled = true;
+
+    // OTLP exporter (enable when a collector is available).
+    options.Exporters.Otlp.Enabled = false;
     options.Exporters.Otlp.Endpoint = "http://localhost:4317";
 });
 
-using var provider = services.BuildServiceProvider();
+using var host = builder.Build();
+await host.StartAsync();
 
-// Resolve the generic building blocks that OpenTelemetry registered for us.
-var logger = provider.GetRequiredService<ILogger<OrderProcessor>>();
-var activitySourceAccessor = provider.GetRequiredService<IActivitySourceAccessor>();
-var meterAccessor = provider.GetRequiredService<IMeterAccessor>();
+try
+{
+    // Resolve the generic building blocks that OpenTelemetry registered for us.
+    var logger = host.Services.GetRequiredService<ILogger<OrderProcessor>>();
+    var activitySourceAccessor = host.Services.GetRequiredService<IActivitySourceAccessor>();
+    var meterAccessor = host.Services.GetRequiredService<IMeterAccessor>();
 
-var processor = new OrderProcessor(logger, activitySourceAccessor, meterAccessor);
+    var processor = new OrderProcessor(logger, activitySourceAccessor, meterAccessor);
 
-// Simulate processing some orders.
-processor.ProcessOrder("ORD-001", "tenant-acme");
-processor.ProcessOrder("ORD-002", "tenant-globex");
+    // Simulate processing some orders.
+    processor.ProcessOrder("ORD-001", "tenant-acme");
+    processor.ProcessOrder("ORD-002", "tenant-globex");
+}
+finally
+{
+    await host.StopAsync();
+}
 
 Console.WriteLine();
-Console.WriteLine("Sample completed. In a real setup with OTLP enabled,");
-Console.WriteLine("traces and metrics would be exported to your collector.");
+Console.WriteLine("Sample completed. Console exporter output is written while the host stops.");
+Console.WriteLine("logs, traces, and metrics would be exported to your collector.");
 
 // ------------------------------------------------------------------------
 // Sample service that uses all three diagnostics building blocks.

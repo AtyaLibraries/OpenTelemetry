@@ -2,10 +2,11 @@
 // Copyright (c) Atya. All rights reserved.
 // </copyright>
 using Atya.Diagnostics.OpenTelemetry.Internal;
+using Atya.Diagnostics.OpenTelemetry.Logging;
 using Atya.Diagnostics.OpenTelemetry.Metrics;
 using Atya.Diagnostics.OpenTelemetry.Options;
 using Atya.Diagnostics.OpenTelemetry.Tracing;
-using Atya.Diagnostics.Observation.DependencyInjection;
+using Atya.Diagnostics.Observation.Models;
 using Atya.Foundation.Guards;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -44,44 +45,46 @@ public static class OpenTelemetryServiceCollectionExtensions
             .Configure(configureOptions)
             .ValidateOnStart();
 
-        services.TryAddSingleton<IValidateOptions<OpenTelemetryOptions>, OpenTelemetryOptionsValidator>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IValidateOptions<OpenTelemetryOptions>, OpenTelemetryOptionsValidator>());
 
-        var serviceName = bootstrapOptions.ServiceName.Trim();
-        var activitySourceName = string.IsNullOrWhiteSpace(bootstrapOptions.ActivitySourceName)
-            ? serviceName
-            : bootstrapOptions.ActivitySourceName.Trim();
-        var meterName = string.IsNullOrWhiteSpace(bootstrapOptions.MeterName)
-            ? serviceName
-            : bootstrapOptions.MeterName.Trim();
+        var identity = ObservationIdentityResolver.Resolve(bootstrapOptions.Observation);
 
         // Compose the generic Observation layer (Logging + Tracing + Metrics registration).
         _ = services.AddAtyaObservation(observationOptions =>
         {
-            observationOptions.ServiceName = serviceName;
-            observationOptions.ServiceVersion = bootstrapOptions.ServiceVersion;
-            observationOptions.ActivitySourceName = activitySourceName;
-            observationOptions.MeterName = meterName;
+            observationOptions.ServiceName = bootstrapOptions.Observation.ServiceName;
+            observationOptions.ServiceVersion = bootstrapOptions.Observation.ServiceVersion;
+            observationOptions.ActivitySourceName = bootstrapOptions.Observation.ActivitySourceName;
+            observationOptions.MeterName = bootstrapOptions.Observation.MeterName;
             observationOptions.ConfigureLogging = bootstrapOptions.EnableObservationLogging;
             observationOptions.ConfigureTracing = bootstrapOptions.EnableTracing;
             observationOptions.ConfigureMetrics = bootstrapOptions.EnableMetrics;
         });
 
         // Build the OpenTelemetry resource.
-        var resourceBuilder = ResourceBuilderFactory.Create(bootstrapOptions, activitySourceName, meterName);
+        var resourceBuilder = ResourceBuilderFactory.Create(identity, bootstrapOptions.Resource);
 
         // Delegate pipeline configuration to folder-based configurators.
         var otelBuilder = services.AddOpenTelemetry();
 
+        if (bootstrapOptions.EnableLogging)
+        {
+            _ = otelBuilder.WithLogging(
+                logging => logging.ConfigureAtyaLogging(bootstrapOptions, resourceBuilder),
+                loggingOptions => loggingOptions.ConfigureAtyaLogging(bootstrapOptions.Logging));
+        }
+
         if (bootstrapOptions.EnableTracing)
         {
             _ = otelBuilder.WithTracing(tracing =>
-                tracing.ConfigureAtyaTracing(bootstrapOptions, resourceBuilder, activitySourceName));
+                tracing.ConfigureAtyaTracing(bootstrapOptions, resourceBuilder, identity.ActivitySourceName));
         }
 
         if (bootstrapOptions.EnableMetrics)
         {
             _ = otelBuilder.WithMetrics(metrics =>
-                metrics.ConfigureAtyaMetrics(bootstrapOptions, resourceBuilder, meterName));
+                metrics.ConfigureAtyaMetrics(bootstrapOptions, resourceBuilder, identity.MeterName));
         }
 
         return services;

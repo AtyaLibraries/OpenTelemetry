@@ -9,7 +9,7 @@ namespace Atya.Diagnostics.OpenTelemetry.Internal;
 
 /// <summary>
 /// Applies <see cref="OtlpOptions"/> configuration to the underlying OpenTelemetry <see cref="OtlpExporterOptions"/>.
-/// Shared between tracing and metrics pipelines.
+/// Shared between logging, tracing, and metrics pipelines.
 /// </summary>
 internal static class OtlpExporterConfigurator
 {
@@ -23,9 +23,17 @@ internal static class OtlpExporterConfigurator
             otlp.Endpoint = new Uri(options.Endpoint);
         }
 
-        if (!string.IsNullOrWhiteSpace(options.Protocol))
+        if (options.Protocol is { } protocol)
         {
-            otlp.Protocol = ParseProtocol(options.Protocol);
+            if (!Enum.IsDefined(typeof(OtlpExportProtocol), protocol))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(options),
+                    protocol,
+                    "OTLP protocol must be a defined OtlpExportProtocol value.");
+            }
+
+            otlp.Protocol = protocol;
         }
 
         if (options.Headers.Count > 0)
@@ -34,33 +42,4 @@ internal static class OtlpExporterConfigurator
         }
     }
 
-    public static bool IsSupportedProtocol(string? protocol)
-    {
-        if (string.IsNullOrWhiteSpace(protocol))
-        {
-            return true;
-        }
-
-        return protocol.Equals("grpc", StringComparison.OrdinalIgnoreCase) ||
-            protocol.Equals("http/protobuf", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static OtlpExportProtocol ParseProtocol(string protocol)
-    {
-        var normalizedProtocol = Guard.AgainstNullOrWhiteSpace(protocol).Trim();
-
-        if (normalizedProtocol.Equals("grpc", StringComparison.OrdinalIgnoreCase))
-        {
-            return OtlpExportProtocol.Grpc;
-        }
-
-        if (normalizedProtocol.Equals("http/protobuf", StringComparison.OrdinalIgnoreCase))
-        {
-            return OtlpExportProtocol.HttpProtobuf;
-        }
-
-        throw new ArgumentException(
-            "OTLP protocol must be either 'grpc' or 'http/protobuf'.",
-            nameof(protocol));
-    }
 }

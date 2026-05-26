@@ -1,6 +1,8 @@
 // <copyright file="OtlpOptions.cs" company="Atya">
 // Copyright (c) Atya. All rights reserved.
 // </copyright>
+using OpenTelemetry.Exporter;
+
 namespace Atya.Diagnostics.OpenTelemetry.Options;
 
 /// <summary>
@@ -20,10 +22,10 @@ public sealed class OtlpOptions
     public string? Endpoint { get; set; }
 
     /// <summary>
-    /// Gets or sets the OTLP transport protocol. Supported values: "grpc", "http/protobuf".
+    /// Gets or sets the OTLP transport protocol.
     /// When null, the OpenTelemetry SDK default is used.
     /// </summary>
-    public string? Protocol { get; set; }
+    public OtlpExportProtocol? Protocol { get; set; }
 
     /// <summary>
     /// Gets additional headers to include in OTLP export requests.

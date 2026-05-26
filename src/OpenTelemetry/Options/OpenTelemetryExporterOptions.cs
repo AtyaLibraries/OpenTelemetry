@@ -9,6 +9,11 @@ namespace Atya.Diagnostics.OpenTelemetry.Options;
 public sealed class OpenTelemetryExporterOptions
 {
     /// <summary>
+    /// Gets console exporter configuration.
+    /// </summary>
+    public ConsoleOptions Console { get; } = new();
+
+    /// <summary>
     /// Gets OTLP exporter configuration.
     /// </summary>
     public OtlpOptions Otlp { get; } = new();

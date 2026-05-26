@@ -1,16 +1,22 @@
 using System.Data;
 using System.Diagnostics;
 using Atya.Diagnostics.OpenTelemetry.Internal;
+using Atya.Diagnostics.OpenTelemetry.Logging;
 using Atya.Diagnostics.OpenTelemetry.Metrics;
 using Atya.Diagnostics.OpenTelemetry.Options;
 using Atya.Diagnostics.OpenTelemetry.Tracing;
+using Atya.Diagnostics.Observation.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using AtyaLoggerProviderBuilderExtensions = Atya.Diagnostics.OpenTelemetry.Logging.LoggerProviderBuilderExtensions;
+using AtyaOpenTelemetryLoggerOptionsExtensions = Atya.Diagnostics.OpenTelemetry.Logging.OpenTelemetryLoggerOptionsExtensions;
 using AtyaTracerProviderBuilderExtensions = Atya.Diagnostics.OpenTelemetry.Tracing.TracerProviderBuilderExtensions;
 
 namespace OpenTelemetry.UnitTests.Internal;
@@ -24,7 +30,7 @@ public sealed class OpenTelemetryInternalTests
         var options = new OtlpOptions
         {
             Endpoint = "http://localhost:4317",
-            Protocol = "grpc",
+            Protocol = OtlpExportProtocol.Grpc,
         };
         options.Headers["authorization"] = "Bearer token";
         options.Headers["tenant"] = "orders";
@@ -42,7 +48,7 @@ public sealed class OpenTelemetryInternalTests
         var otlp = new OtlpExporterOptions();
         var options = new OtlpOptions
         {
-            Protocol = " http/protobuf ",
+            Protocol = OtlpExportProtocol.HttpProtobuf,
         };
 
         OtlpExporterConfigurator.Apply(otlp, options);
@@ -66,34 +72,18 @@ public sealed class OpenTelemetryInternalTests
     }
 
     [Fact]
-    public void OtlpExporterConfigurator_Should_Throw_For_Invalid_Protocol()
+    public void OtlpExporterConfigurator_Should_Throw_For_Undefined_Protocol()
     {
         var otlp = new OtlpExporterOptions();
         var options = new OtlpOptions
         {
-            Protocol = "json",
+            Protocol = (OtlpExportProtocol)42,
         };
 
         var act = () => OtlpExporterConfigurator.Apply(otlp, options);
 
-        _ = act.Should().Throw<ArgumentException>()
-            .WithParameterName("protocol");
-    }
-
-    [Theory]
-    [InlineData(null, true)]
-    [InlineData("", true)]
-    [InlineData("   ", true)]
-    [InlineData("grpc", true)]
-    [InlineData("GRPC", true)]
-    [InlineData("http/protobuf", true)]
-    [InlineData("HTTP/PROTOBUF", true)]
-    [InlineData("http/json", false)]
-    public void OtlpExporterConfigurator_Should_Report_Supported_Protocols(string? protocol, bool expected)
-    {
-        var supported = OtlpExporterConfigurator.IsSupportedProtocol(protocol);
-
-        _ = supported.Should().Be(expected);
+        _ = act.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("options");
     }
 
     [Fact]
@@ -114,7 +104,7 @@ public sealed class OpenTelemetryInternalTests
         var options = CreateValidOptions();
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
-        options.Exporters.Otlp.Protocol = "grpc";
+        options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
         options.Exporters.Otlp.Headers["authorization"] = "Bearer token";
 
         var result = new OpenTelemetryOptionsValidator().Validate(null, options);
@@ -127,7 +117,7 @@ public sealed class OpenTelemetryInternalTests
     {
         var options = CreateValidOptions();
         options.Exporters.Otlp.Endpoint = "not a uri";
-        options.Exporters.Otlp.Protocol = "json";
+        options.Exporters.Otlp.Protocol = (OtlpExportProtocol)42;
         options.Exporters.Otlp.Headers["bad,key"] = "bad,value";
 
         var result = new OpenTelemetryOptionsValidator().Validate(null, options);
@@ -142,12 +132,38 @@ public sealed class OpenTelemetryInternalTests
     public void OpenTelemetryOptionsValidator_Should_Fail_When_ServiceName_Is_Missing(string? serviceName)
     {
         var options = CreateValidOptions();
-        options.ServiceName = serviceName!;
+        options.Observation.ServiceName = serviceName!;
 
         var result = new OpenTelemetryOptionsValidator().Validate("named", options);
 
         _ = result.Failed.Should().BeTrue();
-        _ = result.FailureMessage.Should().Contain("ServiceName");
+        _ = result.Failures.Should().Contain("OpenTelemetryOptions.Observation.ServiceName cannot be null or whitespace.");
+    }
+
+    [Fact]
+    public void OpenTelemetryOptionsValidator_Should_Collect_All_Failures()
+    {
+        var options = CreateValidOptions();
+        options.Observation.ServiceName = string.Empty;
+        options.ActivitySources.Add(" ");
+        options.Meters.Add("");
+        options.Exporters.Otlp.Enabled = true;
+        options.Exporters.Otlp.Endpoint = "not a uri";
+        options.Exporters.Otlp.Protocol = (OtlpExportProtocol)42;
+        options.Exporters.Otlp.Headers["bad,key"] = "bad,value";
+        options.Exporters.Otlp.Headers["missing-value"] = null!;
+
+        var result = new OpenTelemetryOptionsValidator().Validate(null, options);
+
+        _ = result.Failed.Should().BeTrue();
+        _ = result.Failures.Should().Contain("OpenTelemetryOptions.Observation.ServiceName cannot be null or whitespace.");
+        _ = result.Failures.Should().Contain("OpenTelemetryOptions.ActivitySources cannot contain a null or whitespace name.");
+        _ = result.Failures.Should().Contain("OpenTelemetryOptions.Meters cannot contain a null or whitespace name.");
+        _ = result.Failures.Should().Contain(failure => failure.Contains("OpenTelemetryOptions.Exporters.Otlp.Endpoint", StringComparison.Ordinal));
+        _ = result.Failures.Should().Contain("OpenTelemetryOptions.Exporters.Otlp.Protocol must be a defined OtlpExportProtocol value.");
+        _ = result.Failures.Should().Contain("OpenTelemetryOptions.Exporters.Otlp.Headers header names cannot contain ',' or '='.");
+        _ = result.Failures.Should().Contain("OpenTelemetryOptions.Exporters.Otlp.Headers header values cannot contain ','.");
+        _ = result.Failures.Should().Contain("OpenTelemetryOptions.Exporters.Otlp.Headers cannot contain a null header value.");
     }
 
     [Theory]
@@ -190,7 +206,7 @@ public sealed class OpenTelemetryInternalTests
     {
         var options = CreateValidOptions();
         options.Exporters.Otlp.Enabled = true;
-        options.Exporters.Otlp.Protocol = "json";
+        options.Exporters.Otlp.Protocol = (OtlpExportProtocol)42;
 
         var result = new OpenTelemetryOptionsValidator().Validate(null, options);
 
@@ -232,20 +248,23 @@ public sealed class OpenTelemetryInternalTests
     public void ResourceBuilderFactory_Should_Create_Resource_With_Service_Metadata_And_Custom_Attributes()
     {
         var options = CreateValidOptions();
-        options.ServiceName = " Orders.Service ";
-        options.ServiceVersion = " 1.2.3 ";
+        options.Observation.ServiceName = " Orders.Service ";
+        options.Observation.ServiceVersion = " 1.2.3 ";
         options.Resource.ServiceNamespace = "orders";
         options.Resource.ServiceInstanceId = "pod-123";
         options.Resource.DeploymentEnvironment = "production";
         options.Resource.Attributes["team"] = "platform";
 
-        var resource = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics").Build();
+        var resource = ResourceBuilderFactory.Create(
+            ObservationIdentityResolver.Resolve(options.Observation),
+            options.Resource).Build();
         var attributes = resource.Attributes.ToDictionary(attribute => attribute.Key, attribute => attribute.Value);
 
         _ = attributes.Should().Contain("service.name", "Orders.Service");
         _ = attributes.Should().Contain("service.version", "1.2.3");
         _ = attributes.Should().Contain("service.namespace", "orders");
         _ = attributes.Should().Contain("service.instance.id", "pod-123");
+        _ = attributes.Should().Contain("deployment.environment.name", "production");
         _ = attributes.Should().Contain("deployment.environment", "production");
         _ = attributes.Should().Contain("team", "platform");
     }
@@ -253,10 +272,14 @@ public sealed class OpenTelemetryInternalTests
     [Fact]
     public void ResourceBuilderFactory_Should_Create_Minimal_Resource()
     {
-        var resource = ResourceBuilderFactory.Create(CreateValidOptions(), "Orders.Tracing", "Orders.Metrics").Build();
+        var options = CreateValidOptions();
+        var resource = ResourceBuilderFactory.Create(
+            ObservationIdentityResolver.Resolve(options.Observation),
+            options.Resource).Build();
         var attributes = resource.Attributes.ToDictionary(attribute => attribute.Key, attribute => attribute.Value);
 
         _ = attributes.Should().Contain("service.name", "Orders.Service");
+        _ = attributes.Should().NotContainKey("deployment.environment.name");
         _ = attributes.Should().NotContainKey("deployment.environment");
     }
 
@@ -264,16 +287,14 @@ public sealed class OpenTelemetryInternalTests
     public void ResourceBuilderFactory_Should_Throw_When_Arguments_Are_Invalid()
     {
         var validOptions = CreateValidOptions();
-        var actForNullOptions = () => ResourceBuilderFactory.Create(null!, "source", "meter");
-        var actForInvalidSource = () => ResourceBuilderFactory.Create(validOptions, " ", "meter");
-        var actForInvalidMeter = () => ResourceBuilderFactory.Create(validOptions, "source", "");
+        var validIdentity = ObservationIdentityResolver.Resolve(validOptions.Observation);
+        var actForNullIdentity = () => ResourceBuilderFactory.Create(null!, validOptions.Resource);
+        var actForNullResource = () => ResourceBuilderFactory.Create(validIdentity, null!);
 
-        _ = actForNullOptions.Should().Throw<ArgumentNullException>()
-            .WithParameterName("options");
-        _ = actForInvalidSource.Should().Throw<ArgumentException>()
-            .WithParameterName("activitySourceName");
-        _ = actForInvalidMeter.Should().Throw<ArgumentException>()
-            .WithParameterName("meterName");
+        _ = actForNullIdentity.Should().Throw<ArgumentNullException>()
+            .WithParameterName("identity");
+        _ = actForNullResource.Should().Throw<ArgumentNullException>()
+            .WithParameterName("resourceOptions");
     }
 
     [Fact]
@@ -311,7 +332,7 @@ public sealed class OpenTelemetryInternalTests
     public void TracerProviderBuilderExtensions_Should_Configure_All_Tracing_Branches()
     {
         var options = CreateFullOptions();
-        var resourceBuilder = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics");
+        var resourceBuilder = CreateResourceBuilder(options);
         var builder = Sdk.CreateTracerProviderBuilder();
 
         var result = builder.ConfigureAtyaTracing(options, resourceBuilder, "Orders.Tracing");
@@ -325,7 +346,7 @@ public sealed class OpenTelemetryInternalTests
     public void TracerProviderBuilderExtensions_Should_Configure_Minimal_Tracing_Branches()
     {
         var options = CreateValidOptions();
-        var resourceBuilder = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics");
+        var resourceBuilder = CreateResourceBuilder(options);
         var builder = Sdk.CreateTracerProviderBuilder();
 
         var result = builder.ConfigureAtyaTracing(options, resourceBuilder, "Orders.Tracing");
@@ -339,7 +360,7 @@ public sealed class OpenTelemetryInternalTests
         var options = CreateValidOptions();
         options.Instrumentations.SqlClient.Enabled = true;
         options.Instrumentations.EntityFrameworkCore.Enabled = true;
-        var resourceBuilder = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics");
+        var resourceBuilder = CreateResourceBuilder(options);
         var builder = Sdk.CreateTracerProviderBuilder();
 
         var result = builder.ConfigureAtyaTracing(options, resourceBuilder, "Orders.Tracing");
@@ -353,7 +374,7 @@ public sealed class OpenTelemetryInternalTests
     public void TracerProviderBuilderExtensions_Should_Throw_When_Arguments_Are_Invalid()
     {
         var options = CreateValidOptions();
-        var resourceBuilder = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics");
+        var resourceBuilder = CreateResourceBuilder(options);
         var builder = Sdk.CreateTracerProviderBuilder();
 
         var actForNullBuilder = () => AtyaTracerProviderBuilderExtensions.ConfigureAtyaTracing(null!, options, resourceBuilder, "source");
@@ -375,7 +396,7 @@ public sealed class OpenTelemetryInternalTests
     public void MeterProviderBuilderExtensions_Should_Configure_All_Metrics_Branches()
     {
         var options = CreateFullOptions();
-        var resourceBuilder = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics");
+        var resourceBuilder = CreateResourceBuilder(options);
         var builder = Sdk.CreateMeterProviderBuilder();
 
         var result = builder.ConfigureAtyaMetrics(options, resourceBuilder, "Orders.Metrics");
@@ -387,7 +408,7 @@ public sealed class OpenTelemetryInternalTests
     public void MeterProviderBuilderExtensions_Should_Configure_Minimal_Metrics_Branches()
     {
         var options = CreateValidOptions();
-        var resourceBuilder = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics");
+        var resourceBuilder = CreateResourceBuilder(options);
         var builder = Sdk.CreateMeterProviderBuilder();
 
         var result = builder.ConfigureAtyaMetrics(options, resourceBuilder, "Orders.Metrics");
@@ -399,7 +420,7 @@ public sealed class OpenTelemetryInternalTests
     public void MeterProviderBuilderExtensions_Should_Throw_When_Arguments_Are_Invalid()
     {
         var options = CreateValidOptions();
-        var resourceBuilder = ResourceBuilderFactory.Create(options, "Orders.Tracing", "Orders.Metrics");
+        var resourceBuilder = CreateResourceBuilder(options);
         var builder = Sdk.CreateMeterProviderBuilder();
 
         var actForNullBuilder = () => MeterProviderBuilderExtensions.ConfigureAtyaMetrics(null!, options, resourceBuilder, "meter");
@@ -415,6 +436,73 @@ public sealed class OpenTelemetryInternalTests
             .WithParameterName("resourceBuilder");
         _ = actForInvalidMeter.Should().Throw<ArgumentException>()
             .WithParameterName("meterName");
+    }
+
+    [Fact]
+    public void LoggerProviderBuilderExtensions_Should_Configure_Through_OpenTelemetry_Builder()
+    {
+        var options = CreateFullOptions();
+        var resourceBuilder = CreateResourceBuilder(options);
+        var services = new ServiceCollection();
+        var configured = false;
+
+        _ = services.AddOpenTelemetry()
+            .WithLogging(logging =>
+            {
+                var result = logging.ConfigureAtyaLogging(options, resourceBuilder);
+                configured = ReferenceEquals(result, logging);
+            });
+
+        using var provider = services.BuildServiceProvider();
+        var loggerProviders = provider.GetServices<ILoggerProvider>();
+
+        _ = loggerProviders.Should().Contain(loggerProvider => loggerProvider is OpenTelemetryLoggerProvider);
+        _ = configured.Should().BeTrue();
+    }
+
+    [Fact]
+    public void LoggerProviderBuilderExtensions_Should_Throw_When_Builder_Is_Null()
+    {
+        var options = CreateValidOptions();
+        var resourceBuilder = CreateResourceBuilder(options);
+
+        var actForNullBuilder = () => AtyaLoggerProviderBuilderExtensions.ConfigureAtyaLogging(null!, options, resourceBuilder);
+
+        _ = actForNullBuilder.Should().Throw<ArgumentNullException>()
+            .WithParameterName("builder");
+    }
+
+    [Fact]
+    public void OpenTelemetryLoggerOptionsExtensions_Should_Apply_Log_Record_Options()
+    {
+        var loggerOptions = new OpenTelemetryLoggerOptions();
+        var options = new OpenTelemetryLoggingOptions
+        {
+            IncludeFormattedMessage = false,
+            IncludeScopes = false,
+            ParseStateValues = false,
+        };
+
+        var result = loggerOptions.ConfigureAtyaLogging(options);
+
+        _ = result.Should().BeSameAs(loggerOptions);
+        _ = loggerOptions.IncludeFormattedMessage.Should().BeFalse();
+        _ = loggerOptions.IncludeScopes.Should().BeFalse();
+        _ = loggerOptions.ParseStateValues.Should().BeFalse();
+    }
+
+    [Fact]
+    public void OpenTelemetryLoggerOptionsExtensions_Should_Throw_When_Arguments_Are_Null()
+    {
+        var loggerOptions = new OpenTelemetryLoggerOptions();
+
+        var actForNullOptions = () => loggerOptions.ConfigureAtyaLogging(null!);
+        var actForNullLoggerOptions = () => AtyaOpenTelemetryLoggerOptionsExtensions.ConfigureAtyaLogging(null!, new OpenTelemetryLoggingOptions());
+
+        _ = actForNullOptions.Should().Throw<ArgumentNullException>()
+            .WithParameterName("options");
+        _ = actForNullLoggerOptions.Should().Throw<ArgumentNullException>()
+            .WithParameterName("loggerOptions");
     }
 
     [Fact]
@@ -488,8 +576,18 @@ public sealed class OpenTelemetryInternalTests
     {
         return new OpenTelemetryOptions
         {
-            ServiceName = "Orders.Service",
+            Observation =
+            {
+                ServiceName = "Orders.Service",
+            },
         };
+    }
+
+    private static ResourceBuilder CreateResourceBuilder(OpenTelemetryOptions options)
+    {
+        return ResourceBuilderFactory.Create(
+            ObservationIdentityResolver.Resolve(options.Observation),
+            options.Resource);
     }
 
     private static OpenTelemetryOptions CreateFullOptions()
@@ -505,9 +603,10 @@ public sealed class OpenTelemetryInternalTests
         options.Instrumentations.EntityFrameworkCore.CaptureSqlText = true;
         options.Instrumentations.GrpcClient.Enabled = true;
         options.Instrumentations.Runtime.Enabled = true;
+        options.Exporters.Console.Enabled = true;
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
-        options.Exporters.Otlp.Protocol = "grpc";
+        options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
         return options;
     }
 }

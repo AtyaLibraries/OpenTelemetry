@@ -4,6 +4,7 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Exporter;
 
 namespace OpenTelemetry.Benchmarks;
 
@@ -68,7 +69,7 @@ public class OpenTelemetryRegistrationBenchmarks
 
     private static void ConfigureMinimal(OpenTelemetryOptions options)
     {
-        options.ServiceName = ServiceName;
+        options.Observation.ServiceName = ServiceName;
         options.EnableObservationLogging = false;
         options.EnableTracing = true;
         options.EnableMetrics = true;
@@ -77,18 +78,19 @@ public class OpenTelemetryRegistrationBenchmarks
     private static void ConfigureFull(OpenTelemetryOptions options)
     {
         ConfigureMinimal(options);
-        options.ServiceVersion = "1.0.0";
-        options.ActivitySourceName = "Benchmarks.Orders.Tracing";
-        options.MeterName = "Benchmarks.Orders.Metrics";
+        options.Observation.ServiceVersion = "1.0.0";
+        options.Observation.ActivitySourceName = "Benchmarks.Orders.Tracing";
+        options.Observation.MeterName = "Benchmarks.Orders.Metrics";
         options.Resource.ServiceNamespace = "benchmarks";
         options.Resource.DeploymentEnvironment = "production";
         options.Resource.Attributes["team"] = "platform";
         options.Instrumentations.AspNetCore.Enabled = true;
         options.Instrumentations.HttpClient.Enabled = true;
         options.Instrumentations.Runtime.Enabled = true;
+        options.Exporters.Console.Enabled = true;
         options.Exporters.Otlp.Enabled = true;
         options.Exporters.Otlp.Endpoint = "http://localhost:4317";
-        options.Exporters.Otlp.Protocol = "grpc";
+        options.Exporters.Otlp.Protocol = OtlpExportProtocol.Grpc;
         options.Exporters.Otlp.Headers["x-benchmark"] = "opentelemetry";
     }
 }

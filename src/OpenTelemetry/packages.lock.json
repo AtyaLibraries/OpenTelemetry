@@ -4,17 +4,16 @@
     "net10.0": {
       "Atya.Diagnostics.Observation": {
         "type": "Direct",
-        "requested": "[1.0.0, )",
-        "resolved": "1.0.0",
-        "contentHash": "85nmR5rEEEzwg8n76NHLv+j8sGMWx1EdfMADlhZqBvS8oPSe70N1mZ9iBFfYtMz27jN8+9YVHyIf5GI+r9nFHg==",
+        "requested": "[1.0.1, )",
+        "resolved": "1.0.1",
+        "contentHash": "Rx7dLfRsqN2eLCnHr5Yswa2w8yQUxXNgVcAvjifrULEPDWHx5ZUY4Morb/0uf2FKKn2WLtEGTh9uA2nEdEyZbg==",
         "dependencies": {
-          "Atya.Diagnostics.Logging": "1.0.0",
-          "Atya.Diagnostics.Metrics": "1.0.0",
-          "Atya.Diagnostics.Tracing": "1.0.0",
+          "Atya.Diagnostics.Logging": "1.0.1",
+          "Atya.Diagnostics.Metrics": "1.0.1",
+          "Atya.Diagnostics.Tracing": "1.0.1",
           "Atya.Foundation.Guards": "1.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
-          "Microsoft.Extensions.Options": "10.0.8",
-          "Microsoft.Extensions.Options.DataAnnotations": "10.0.8"
+          "Microsoft.Extensions.Options": "10.0.8"
         }
       },
       "Atya.Foundation.Guards": {
@@ -90,6 +89,15 @@
           "Microsoft.Extensions.Diagnostics.Abstractions": "10.0.0",
           "Microsoft.Extensions.Logging.Configuration": "10.0.0",
           "OpenTelemetry.Api.ProviderBuilderExtensions": "1.15.3"
+        }
+      },
+      "OpenTelemetry.Exporter.Console": {
+        "type": "Direct",
+        "requested": "[1.15.3, )",
+        "resolved": "1.15.3",
+        "contentHash": "QBGOoPwLHDXX+hXeUpspOjsqEn4vMkLw672QN+MzVWFBzjf625DdxLxhzowS1J/dRtW93U34rRbJec+4808fkg==",
+        "dependencies": {
+          "OpenTelemetry": "1.15.3"
         }
       },
       "OpenTelemetry.Exporter.OpenTelemetryProtocol": {
@@ -173,8 +181,8 @@
       },
       "Atya.Diagnostics.Logging": {
         "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "JXgn5jimNlnYA94WynXTdcp6ayybTveqTCcfxN/60fqO3ucaQ9YGf3JDVRzo0en5D6lYKwZKNZXWzo3/wnO9ew==",
+        "resolved": "1.0.1",
+        "contentHash": "PlrizTJNeGkV0jTc4iw5ceswuGqH2wV3dDfo+LUcrYCjYtgbtT8ycFfNWV4ZuPoZR5vSj4b0LGQu5dGK/B98LA==",
         "dependencies": {
           "Atya.Foundation.Guards": "1.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
@@ -183,8 +191,8 @@
       },
       "Atya.Diagnostics.Metrics": {
         "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "2iT9yJeBSFnPpkszq+i9/Bp3adrqp1q85x9EgTLfsvi+FWms3e48rgvIO6zeer8Jtehe0Whur1Njn5AB4/usHQ==",
+        "resolved": "1.0.1",
+        "contentHash": "1H70t3SEcoxIPI1bD/i9Y7+NnOnAMM3YqwuK1DpHoqH+aqX5RIbDOarACJ60oyhz6HjIIGTiypN4GqhgDzRmtg==",
         "dependencies": {
           "Atya.Foundation.Guards": "1.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
@@ -193,8 +201,8 @@
       },
       "Atya.Diagnostics.Tracing": {
         "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "Er7R3/oL8s1XrzrVy4h1QKEVLsNo8vFYEZ93kfl/XURyAUOapajK9UUI5azQOMDtsUK3yNtMjCqVi8V97wmEhA==",
+        "resolved": "1.0.1",
+        "contentHash": "8lGM/J451JmkWZJRDYtxJuKXcSs0P18igKB9S3EhAwUM5X4v59SIkb0Lg9eRYTae7+vQcPJvOVQNqfwXQvh/Hg==",
         "dependencies": {
           "Atya.Foundation.Guards": "1.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
@@ -224,15 +232,6 @@
         "contentHash": "fdVadZmsC8jRP0KvKy8mO8f6GV/HyBvElfcSxEhd+5FM5boAw/01iSaCto5G3G37ApJira4A3pNaVvBv8cUiLQ==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8"
-        }
-      },
-      "Microsoft.Extensions.Options.DataAnnotations": {
-        "type": "Transitive",
-        "resolved": "10.0.8",
-        "contentHash": "HhxwIGECGGJ8ox2kvm6/hkN/w1ZyKrO5uu/rLAL51V0ypPdahoNf+dHS6Er/DJs2aeUmH38ZTTzACfLy1O6w3Q==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
-          "Microsoft.Extensions.Options": "10.0.8"
         }
       },
       "Microsoft.Extensions.Primitives": {
