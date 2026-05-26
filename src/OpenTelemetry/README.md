@@ -20,8 +20,8 @@ using OpenTelemetry.Exporter;
 
 services.AddAtyaOpenTelemetry(options =>
 {
-    options.ServiceName = "Orders.Service";
-    options.ServiceVersion = "1.0.0";
+    options.Observation.ServiceName = "Orders.Service";
+    options.Observation.ServiceVersion = "1.0.0";
     options.EnableLogging = true;
     options.ActivitySources.Add("Orders.Workflows");
     options.Meters.Add("Orders.Business");
@@ -52,8 +52,10 @@ Bind from the default `OpenTelemetry` configuration section:
 ```json
 {
   "OpenTelemetry": {
-    "ServiceName": "Orders.Service",
-    "ServiceVersion": "1.0.0",
+    "Observation": {
+      "ServiceName": "Orders.Service",
+      "ServiceVersion": "1.0.0"
+    },
     "EnableLogging": true,
     "EnableTracing": true,
     "EnableMetrics": true,
@@ -115,9 +117,9 @@ services.AddAtyaOpenTelemetry(configuration, "Diagnostics:OpenTelemetry");
 
 ## Behavior
 
-- `ServiceName` is required and is trimmed before registration.
-- `ActivitySourceName` defaults to `ServiceName` when omitted.
-- `MeterName` defaults to `ServiceName` when omitted.
+- `Observation.ServiceName` is required and is trimmed before registration.
+- `Observation.ActivitySourceName` defaults to `Observation.ServiceName` when omitted.
+- `Observation.MeterName` defaults to `Observation.ServiceName` when omitted.
 - `ActivitySources` adds extra application `ActivitySource` names beyond the package default.
 - `Meters` adds extra application `Meter` names beyond the package default.
 - Options passed to `AddAtyaOpenTelemetry` are validated immediately because the OpenTelemetry providers are configured during service registration.
@@ -135,7 +137,7 @@ services.AddAtyaOpenTelemetry(configuration, "Diagnostics:OpenTelemetry");
 
 Options are validated through `Microsoft.Extensions.Options`. Invalid options fail when options are resolved or when host startup validation runs.
 
-- `ServiceName` cannot be null, empty, or whitespace.
+- `Observation.ServiceName` cannot be null, empty, or whitespace.
 - `ActivitySources` and `Meters` cannot contain null, empty, or whitespace names.
 - OTLP `Endpoint`, when set, must be an absolute URI.
 - OTLP `Protocol`, when set, must be a defined `OtlpExportProtocol` value such as `Grpc` or `HttpProtobuf`.

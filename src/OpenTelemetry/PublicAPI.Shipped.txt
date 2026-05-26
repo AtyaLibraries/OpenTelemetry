@@ -22,8 +22,8 @@ Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryInstrumentationOptions.OpenT
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryInstrumentationOptions.Runtime.get -> Atya.Diagnostics.OpenTelemetry.Options.InstrumentationToggle!
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryInstrumentationOptions.SqlClient.get -> Atya.Diagnostics.OpenTelemetry.Options.DatabaseInstrumentationOptions!
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions
-Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ActivitySourceName.get -> string?
-Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ActivitySourceName.set -> void
+*REMOVED*Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ActivitySourceName.get -> string?
+*REMOVED*Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ActivitySourceName.set -> void
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ActivitySources.get -> System.Collections.Generic.IList<string!>!
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.EnableMetrics.get -> bool
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.EnableMetrics.set -> void
@@ -33,15 +33,15 @@ Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.EnableTracing.get ->
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.EnableTracing.set -> void
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.Exporters.get -> Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryExporterOptions!
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.Instrumentations.get -> Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryInstrumentationOptions!
-Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.MeterName.get -> string?
-Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.MeterName.set -> void
+*REMOVED*Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.MeterName.get -> string?
+*REMOVED*Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.MeterName.set -> void
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.Meters.get -> System.Collections.Generic.IList<string!>!
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.OpenTelemetryOptions() -> void
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.Resource.get -> Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryResourceOptions!
-Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ServiceName.get -> string!
-Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ServiceName.set -> void
-Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ServiceVersion.get -> string?
-Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ServiceVersion.set -> void
+*REMOVED*Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ServiceName.get -> string!
+*REMOVED*Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ServiceName.set -> void
+*REMOVED*Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ServiceVersion.get -> string?
+*REMOVED*Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.ServiceVersion.set -> void
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryResourceOptions
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryResourceOptions.Attributes.get -> System.Collections.Generic.IDictionary<string!, object!>!
 Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryResourceOptions.DeploymentEnvironment.get -> string?

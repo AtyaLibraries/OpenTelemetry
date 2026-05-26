@@ -15,80 +15,71 @@ internal sealed class OpenTelemetryOptionsValidator : IValidateOptions<OpenTelem
         _ = name;
         _ = Guard.AgainstNull(options);
 
-        if (string.IsNullOrWhiteSpace(options.ServiceName))
+        var failures = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(options.Observation.ServiceName))
         {
-            return ValidateOptionsResult.Fail("OpenTelemetryOptions.ServiceName cannot be null or whitespace.");
+            failures.Add("OpenTelemetryOptions.Observation.ServiceName cannot be null or whitespace.");
         }
 
-        var activitySourceValidation = ValidateTelemetryNames(options.ActivitySources, nameof(options.ActivitySources));
-        if (activitySourceValidation is not null)
-        {
-            return activitySourceValidation;
-        }
+        AddTelemetryNameFailures(options.ActivitySources, nameof(options.ActivitySources), failures);
+        AddTelemetryNameFailures(options.Meters, nameof(options.Meters), failures);
 
-        var meterValidation = ValidateTelemetryNames(options.Meters, nameof(options.Meters));
-        if (meterValidation is not null)
+        if (options.Exporters.Otlp.Enabled)
         {
-            return meterValidation;
-        }
-
-        if (!options.Exporters.Otlp.Enabled)
-        {
-            return ValidateOptionsResult.Success;
-        }
-
-        if (options.Exporters.Otlp.Endpoint is not null &&
-            !Uri.TryCreate(options.Exporters.Otlp.Endpoint, UriKind.Absolute, out _))
-        {
-            return ValidateOptionsResult.Fail(
-                $"OpenTelemetryOptions.Exporters.Otlp.Endpoint '{options.Exporters.Otlp.Endpoint}' is not a valid absolute URI.");
-        }
-
-        if (options.Exporters.Otlp.Protocol is { } protocol &&
-            !Enum.IsDefined(typeof(OtlpExportProtocol), protocol))
-        {
-            return ValidateOptionsResult.Fail(
-                "OpenTelemetryOptions.Exporters.Otlp.Protocol must be a defined OtlpExportProtocol value.");
-        }
-
-        foreach (var header in options.Exporters.Otlp.Headers)
-        {
-            if (string.IsNullOrWhiteSpace(header.Key))
+            if (options.Exporters.Otlp.Endpoint is not null &&
+                !Uri.TryCreate(options.Exporters.Otlp.Endpoint, UriKind.Absolute, out _))
             {
-                return ValidateOptionsResult.Fail("OpenTelemetryOptions.Exporters.Otlp.Headers cannot contain a null or whitespace header name.");
+                failures.Add(
+                    $"OpenTelemetryOptions.Exporters.Otlp.Endpoint '{options.Exporters.Otlp.Endpoint}' is not a valid absolute URI.");
             }
 
-            if (header.Key.Contains(',', StringComparison.Ordinal) ||
-                header.Key.Contains('=', StringComparison.Ordinal))
+            if (options.Exporters.Otlp.Protocol is { } protocol &&
+                !Enum.IsDefined(typeof(OtlpExportProtocol), protocol))
             {
-                return ValidateOptionsResult.Fail("OpenTelemetryOptions.Exporters.Otlp.Headers header names cannot contain ',' or '='.");
+                failures.Add("OpenTelemetryOptions.Exporters.Otlp.Protocol must be a defined OtlpExportProtocol value.");
             }
 
-            if (header.Value is null)
+            foreach (var header in options.Exporters.Otlp.Headers)
             {
-                return ValidateOptionsResult.Fail("OpenTelemetryOptions.Exporters.Otlp.Headers cannot contain a null header value.");
-            }
+                if (string.IsNullOrWhiteSpace(header.Key))
+                {
+                    failures.Add("OpenTelemetryOptions.Exporters.Otlp.Headers cannot contain a null or whitespace header name.");
+                }
 
-            if (header.Value.Contains(',', StringComparison.Ordinal))
-            {
-                return ValidateOptionsResult.Fail("OpenTelemetryOptions.Exporters.Otlp.Headers header values cannot contain ','.");
+                if (header.Key.Contains(',', StringComparison.Ordinal) ||
+                    header.Key.Contains('=', StringComparison.Ordinal))
+                {
+                    failures.Add("OpenTelemetryOptions.Exporters.Otlp.Headers header names cannot contain ',' or '='.");
+                }
+
+                if (header.Value is null)
+                {
+                    failures.Add("OpenTelemetryOptions.Exporters.Otlp.Headers cannot contain a null header value.");
+                }
+                else if (header.Value.Contains(',', StringComparison.Ordinal))
+                {
+                    failures.Add("OpenTelemetryOptions.Exporters.Otlp.Headers header values cannot contain ','.");
+                }
             }
         }
 
-        return ValidateOptionsResult.Success;
+        return failures.Count == 0
+            ? ValidateOptionsResult.Success
+            : ValidateOptionsResult.Fail(failures);
     }
 
-    private static ValidateOptionsResult? ValidateTelemetryNames(IEnumerable<string?> names, string optionName)
+    private static void AddTelemetryNameFailures(
+        IEnumerable<string?> names,
+        string optionName,
+        List<string> failures)
     {
         foreach (var name in names)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                return ValidateOptionsResult.Fail(
-                    $"OpenTelemetryOptions.{optionName} cannot contain a null or whitespace name.");
+                failures.Add($"OpenTelemetryOptions.{optionName} cannot contain a null or whitespace name.");
             }
         }
-
-        return null;
     }
 }

@@ -69,7 +69,7 @@ public class OpenTelemetryRegistrationBenchmarks
 
     private static void ConfigureMinimal(OpenTelemetryOptions options)
     {
-        options.ServiceName = ServiceName;
+        options.Observation.ServiceName = ServiceName;
         options.EnableObservationLogging = false;
         options.EnableTracing = true;
         options.EnableMetrics = true;
@@ -78,9 +78,9 @@ public class OpenTelemetryRegistrationBenchmarks
     private static void ConfigureFull(OpenTelemetryOptions options)
     {
         ConfigureMinimal(options);
-        options.ServiceVersion = "1.0.0";
-        options.ActivitySourceName = "Benchmarks.Orders.Tracing";
-        options.MeterName = "Benchmarks.Orders.Metrics";
+        options.Observation.ServiceVersion = "1.0.0";
+        options.Observation.ActivitySourceName = "Benchmarks.Orders.Tracing";
+        options.Observation.MeterName = "Benchmarks.Orders.Metrics";
         options.Resource.ServiceNamespace = "benchmarks";
         options.Resource.DeploymentEnvironment = "production";
         options.Resource.Attributes["team"] = "platform";

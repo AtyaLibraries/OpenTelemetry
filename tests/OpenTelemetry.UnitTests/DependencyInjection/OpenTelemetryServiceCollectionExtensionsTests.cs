@@ -1,7 +1,9 @@
+using System.Text;
 using Atya.Diagnostics.Metrics.Abstractions;
 using Atya.Diagnostics.Metrics.Options;
-using Atya.Diagnostics.Observation.Models;
+using Atya.Diagnostics.OpenTelemetry.Internal;
 using Atya.Diagnostics.OpenTelemetry.Options;
+using Atya.Diagnostics.Observation.Models;
 using Atya.Diagnostics.Tracing.Abstractions;
 using Atya.Diagnostics.Tracing.Options;
 using Microsoft.Extensions.Configuration;
@@ -57,8 +59,8 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
 
         _ = services.AddAtyaOpenTelemetry(options =>
         {
-            options.ServiceName = "Orders.Service";
-            options.ServiceVersion = "1.0.0";
+            options.Observation.ServiceName = "Orders.Service";
+            options.Observation.ServiceVersion = "1.0.0";
         });
 
         using var provider = services.BuildServiceProvider();
@@ -84,9 +86,9 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
 
         _ = services.AddAtyaOpenTelemetry(options =>
         {
-            options.ServiceName = " Orders.Service ";
-            options.ActivitySourceName = " Orders.Tracing ";
-            options.MeterName = " Orders.Metrics ";
+            options.Observation.ServiceName = " Orders.Service ";
+            options.Observation.ActivitySourceName = " Orders.Tracing ";
+            options.Observation.MeterName = " Orders.Metrics ";
         });
 
         using var provider = services.BuildServiceProvider();
@@ -102,12 +104,29 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
     {
         var services = new ServiceCollection();
 
-        _ = services.AddAtyaOpenTelemetry(options => options.ServiceName = "Orders.Service");
+        _ = services.AddAtyaOpenTelemetry(options => options.Observation.ServiceName = "Orders.Service");
 
         using var provider = services.BuildServiceProvider();
 
         _ = provider.GetService<IActivitySourceAccessor>().Should().NotBeNull();
         _ = provider.GetService<IMeterAccessor>().Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AddAtyaOpenTelemetry_Should_Let_OpenTelemetry_Toggles_Override_Observation_Toggles()
+    {
+        var services = new ServiceCollection();
+
+        _ = services.AddAtyaOpenTelemetry(options =>
+        {
+            options.Observation.ServiceName = "Orders.Service";
+            options.Observation.ConfigureTracing = false;
+            options.EnableTracing = true;
+        });
+
+        using var provider = services.BuildServiceProvider();
+
+        _ = provider.GetService<IActivitySourceAccessor>().Should().NotBeNull();
     }
 
     [Fact]
@@ -117,7 +136,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
 
         _ = services.AddAtyaOpenTelemetry(options =>
         {
-            options.ServiceName = "Orders.Service";
+            options.Observation.ServiceName = "Orders.Service";
             options.EnableTracing = false;
         });
 
@@ -134,7 +153,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
 
         _ = services.AddAtyaOpenTelemetry(options =>
         {
-            options.ServiceName = "Orders.Service";
+            options.Observation.ServiceName = "Orders.Service";
             options.EnableMetrics = false;
         });
 
@@ -151,7 +170,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
 
         _ = services.AddAtyaOpenTelemetry(options =>
         {
-            options.ServiceName = "Orders.Service";
+            options.Observation.ServiceName = "Orders.Service";
             options.EnableLogging = true;
         });
 
@@ -168,7 +187,7 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
     {
         var services = new ServiceCollection();
 
-        _ = services.AddAtyaOpenTelemetry(options => options.ServiceName = "Orders.Service");
+        _ = services.AddAtyaOpenTelemetry(options => options.Observation.ServiceName = "Orders.Service");
 
         using var provider = services.BuildServiceProvider();
         var loggerProviders = provider.GetServices<ILoggerProvider>();
@@ -193,10 +212,25 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
     {
         var services = new ServiceCollection();
 
-        _ = services.AddAtyaOpenTelemetry(options => options.ServiceName = "Orders.Service");
-        _ = services.AddAtyaOpenTelemetry(options => options.ServiceName = "Orders.Service");
+        _ = services.AddAtyaOpenTelemetry(options => options.Observation.ServiceName = "Orders.Service");
+        _ = services.AddAtyaOpenTelemetry(options => options.Observation.ServiceName = "Orders.Service");
 
         _ = services.Count(d => d.ServiceType == typeof(ObservationIdentity)).Should().Be(1);
+    }
+
+    [Fact]
+    public void AddAtyaOpenTelemetry_Should_Register_Validator_Through_Enumerable()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IValidateOptions<OpenTelemetryOptions>, TestOpenTelemetryOptionsValidator>();
+
+        _ = services.AddAtyaOpenTelemetry(options => options.Observation.ServiceName = "Orders.Service");
+
+        using var provider = services.BuildServiceProvider();
+        var validators = provider.GetServices<IValidateOptions<OpenTelemetryOptions>>().ToArray();
+
+        _ = validators.Should().ContainSingle(validator => validator is TestOpenTelemetryOptionsValidator);
+        _ = validators.Should().ContainSingle(validator => validator is OpenTelemetryOptionsValidator);
     }
 
     [Fact]
@@ -206,8 +240,8 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
 
         _ = services.AddAtyaOpenTelemetry(options =>
         {
-            options.ServiceName = "Orders.Service";
-            options.ServiceVersion = "2.0.0";
+            options.Observation.ServiceName = "Orders.Service";
+            options.Observation.ServiceVersion = "2.0.0";
             options.EnableLogging = true;
             options.EnableObservationLogging = true;
             options.Logging.IncludeFormattedMessage = false;
@@ -234,8 +268,8 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
 
         var resolvedOptions = provider.GetRequiredService<IOptions<OpenTelemetryOptions>>().Value;
 
-        _ = resolvedOptions.ServiceName.Should().Be("Orders.Service");
-        _ = resolvedOptions.ServiceVersion.Should().Be("2.0.0");
+        _ = resolvedOptions.Observation.ServiceName.Should().Be("Orders.Service");
+        _ = resolvedOptions.Observation.ServiceVersion.Should().Be("2.0.0");
         _ = resolvedOptions.EnableLogging.Should().BeTrue();
         _ = resolvedOptions.EnableObservationLogging.Should().BeTrue();
         _ = resolvedOptions.Logging.IncludeFormattedMessage.Should().BeFalse();
@@ -264,8 +298,8 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["OpenTelemetry:ServiceName"] = "Billing.Service",
-                ["OpenTelemetry:ServiceVersion"] = "3.1.4",
+                ["OpenTelemetry:Observation:ServiceName"] = "Billing.Service",
+                ["OpenTelemetry:Observation:ServiceVersion"] = "3.1.4",
                 ["OpenTelemetry:EnableLogging"] = "true",
                 ["OpenTelemetry:EnableObservationLogging"] = "true",
                 ["OpenTelemetry:Logging:IncludeFormattedMessage"] = "false",
@@ -293,8 +327,8 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
         using var provider = services.BuildServiceProvider();
         var resolvedOptions = provider.GetRequiredService<IOptions<OpenTelemetryOptions>>().Value;
 
-        _ = resolvedOptions.ServiceName.Should().Be("Billing.Service");
-        _ = resolvedOptions.ServiceVersion.Should().Be("3.1.4");
+        _ = resolvedOptions.Observation.ServiceName.Should().Be("Billing.Service");
+        _ = resolvedOptions.Observation.ServiceVersion.Should().Be("3.1.4");
         _ = resolvedOptions.EnableLogging.Should().BeTrue();
         _ = resolvedOptions.EnableObservationLogging.Should().BeTrue();
         _ = resolvedOptions.Logging.IncludeFormattedMessage.Should().BeFalse();
@@ -316,14 +350,38 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void OpenTelemetryOptions_Should_Bind_Nested_Observation_From_Json()
+    {
+        const string Json = """
+            {
+              "OpenTelemetry": {
+                "Observation": {
+                  "ServiceName": "Catalog.Service"
+                }
+              }
+            }
+            """;
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(Json));
+        var configuration = new ConfigurationBuilder()
+            .AddJsonStream(stream)
+            .Build();
+        var options = new OpenTelemetryOptions();
+
+        configuration.GetSection("OpenTelemetry").Bind(options);
+
+        _ = options.Observation.ServiceName.Should().Be("Catalog.Service");
+    }
+
+    [Fact]
     public void AddAtyaOpenTelemetry_Should_Bind_Options_From_Custom_Configuration_Section()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Diagnostics:ServiceName"] = "Shipping.Service",
-                ["Diagnostics:ActivitySourceName"] = "Shipping.Tracing",
-                ["Diagnostics:MeterName"] = "Shipping.Metrics",
+                ["Diagnostics:Observation:ServiceName"] = "Shipping.Service",
+                ["Diagnostics:Observation:ActivitySourceName"] = "Shipping.Tracing",
+                ["Diagnostics:Observation:MeterName"] = "Shipping.Metrics",
             })
             .Build();
         var services = new ServiceCollection();
@@ -343,10 +401,10 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
     {
         var options = new OpenTelemetryOptions();
 
-        _ = options.ServiceName.Should().BeEmpty();
-        _ = options.ServiceVersion.Should().BeNull();
-        _ = options.ActivitySourceName.Should().BeNull();
-        _ = options.MeterName.Should().BeNull();
+        _ = options.Observation.ServiceName.Should().BeEmpty();
+        _ = options.Observation.ServiceVersion.Should().BeNull();
+        _ = options.Observation.ActivitySourceName.Should().BeNull();
+        _ = options.Observation.MeterName.Should().BeNull();
         _ = options.ActivitySources.Should().BeEmpty();
         _ = options.Meters.Should().BeEmpty();
         _ = options.EnableLogging.Should().BeFalse();
@@ -373,5 +431,15 @@ public sealed class OpenTelemetryServiceCollectionExtensionsTests
         _ = options.Resource.ServiceInstanceId.Should().BeNull();
         _ = options.Resource.DeploymentEnvironment.Should().BeNull();
         _ = options.Resource.Attributes.Should().BeEmpty();
+    }
+
+    private sealed class TestOpenTelemetryOptionsValidator : IValidateOptions<OpenTelemetryOptions>
+    {
+        public ValidateOptionsResult Validate(string? name, OpenTelemetryOptions options)
+        {
+            _ = name;
+            _ = options;
+            return ValidateOptionsResult.Success;
+        }
     }
 }

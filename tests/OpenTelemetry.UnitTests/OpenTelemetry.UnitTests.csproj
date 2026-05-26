@@ -5,6 +5,7 @@
   <ItemGroup>
     <PackageReference Include="Atya.Governance.Testing" />
     <PackageReference Include="Microsoft.Extensions.Configuration" VersionOverride="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Options" />
