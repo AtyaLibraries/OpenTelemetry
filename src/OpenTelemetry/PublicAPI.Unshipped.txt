@@ -1,1 +1,2 @@
 #nullable enable
+Atya.Diagnostics.OpenTelemetry.Options.OpenTelemetryOptions.Observation.get -> Atya.Diagnostics.Observation.Options.ObservationOptions!

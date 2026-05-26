@@ -14,8 +14,8 @@ public sealed class OpenTelemetryHostIntegrationTests
         _ = builder.Logging.ClearProviders();
         _ = builder.Services.AddAtyaOpenTelemetry(options =>
         {
-            options.ServiceName = "Orders.Service";
-            options.ServiceVersion = "1.0.0";
+            options.Observation.ServiceName = "Orders.Service";
+            options.Observation.ServiceVersion = "1.0.0";
             options.Resource.ServiceNamespace = "orders";
             options.Resource.DeploymentEnvironment = "test";
             options.Resource.Attributes["team"] = "platform";

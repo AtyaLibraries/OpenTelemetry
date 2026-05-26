@@ -24,8 +24,8 @@ services.AddLogging(logging => logging.AddConsole());
 services.AddAtyaOpenTelemetry(options =>
 {
     // Service identity (required).
-    options.ServiceName = "Samples.OrderProcessor";
-    options.ServiceVersion = "1.0.0";
+    options.Observation.ServiceName = "Samples.OrderProcessor";
+    options.Observation.ServiceVersion = "1.0.0";
 
     // Pipeline toggles.
     options.EnableTracing = true;

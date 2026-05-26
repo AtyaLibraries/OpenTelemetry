@@ -1,6 +1,8 @@
 // <copyright file="OpenTelemetryOptions.cs" company="Atya">
 // Copyright (c) Atya. All rights reserved.
 // </copyright>
+using Atya.Diagnostics.Observation.Options;
+
 namespace Atya.Diagnostics.OpenTelemetry.Options;
 
 /// <summary>
@@ -10,14 +12,17 @@ namespace Atya.Diagnostics.OpenTelemetry.Options;
 public sealed class OpenTelemetryOptions
 {
     /// <summary>
-    /// Gets or sets the logical service name used for resource metadata, tracing, and metrics.
+    /// Gets the shared observation identity (service name, version,
+    /// activity source name, meter name) used across the Atya
+    /// diagnostics layers. Single source of truth for identity.
     /// </summary>
-    public string ServiceName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the service version used for resource metadata and instrument versioning.
-    /// </summary>
-    public string? ServiceVersion { get; set; }
+    /// <remarks>
+    /// Setting Observation.ConfigureLogging / ConfigureTracing /
+    /// ConfigureMetrics directly is IGNORED. The OpenTelemetry-layer
+    /// toggles EnableObservationLogging / EnableTracing / EnableMetrics
+    /// take precedence and overwrite them at registration time.
+    /// </remarks>
+    public ObservationOptions Observation { get; } = new();
 
     /// <summary>
     /// Gets or sets a value indicating whether the OpenTelemetry tracing pipeline is enabled. Default is <c>true</c>.
@@ -32,17 +37,13 @@ public sealed class OpenTelemetryOptions
     /// <summary>
     /// Gets or sets a value indicating whether the Atya Observation logging layer is enabled. Default is <c>false</c>.
     /// </summary>
+    /// <remarks>
+    /// Independent of <c>EnableLogging</c>, which controls the OpenTelemetry
+    /// SDK LoggerProvider pipeline (OTLP / Console export). EnableObservationLogging
+    /// only registers the in-process Atya.Diagnostics.Logging helpers
+    /// (scope factories, structured property helpers) and does NOT export logs anywhere.
+    /// </remarks>
     public bool EnableObservationLogging { get; set; }
-
-    /// <summary>
-    /// Gets or sets the ActivitySource name override. When null, defaults to <see cref="ServiceName"/>.
-    /// </summary>
-    public string? ActivitySourceName { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Meter name override. When null, defaults to <see cref="ServiceName"/>.
-    /// </summary>
-    public string? MeterName { get; set; }
 
     /// <summary>
     /// Gets additional application <see cref="System.Diagnostics.ActivitySource"/> names to subscribe to.

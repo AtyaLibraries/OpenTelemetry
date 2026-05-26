@@ -2,6 +2,7 @@
 // Copyright (c) Atya. All rights reserved.
 // </copyright>
 using Atya.Diagnostics.OpenTelemetry.Options;
+using Atya.Diagnostics.Observation.Models;
 using Atya.Foundation.Guards;
 using OpenTelemetry.Resources;
 
@@ -9,30 +10,32 @@ namespace Atya.Diagnostics.OpenTelemetry.Internal;
 
 internal static class ResourceBuilderFactory
 {
-    public static ResourceBuilder Create(OpenTelemetryOptions options, string activitySourceName, string meterName)
+    public static ResourceBuilder Create(
+        ObservationIdentity identity,
+        OpenTelemetryResourceOptions resourceOptions)
     {
-        _ = Guard.AgainstNull(options);
-        _ = Guard.AgainstNullOrWhiteSpace(activitySourceName);
-        _ = Guard.AgainstNullOrWhiteSpace(meterName);
+        _ = Guard.AgainstNull(identity);
+        _ = Guard.AgainstNull(resourceOptions);
 
         var resourceBuilder = ResourceBuilder.CreateDefault()
             .AddService(
-                serviceName: options.ServiceName.Trim(),
-                serviceVersion: string.IsNullOrWhiteSpace(options.ServiceVersion) ? null : options.ServiceVersion.Trim(),
-                serviceNamespace: options.Resource.ServiceNamespace,
-                serviceInstanceId: options.Resource.ServiceInstanceId);
+                serviceName: identity.ServiceName.Trim(),
+                serviceVersion: string.IsNullOrWhiteSpace(identity.ServiceVersion) ? null : identity.ServiceVersion.Trim(),
+                serviceNamespace: resourceOptions.ServiceNamespace,
+                serviceInstanceId: resourceOptions.ServiceInstanceId);
 
-        if (!string.IsNullOrWhiteSpace(options.Resource.DeploymentEnvironment))
+        if (!string.IsNullOrWhiteSpace(resourceOptions.DeploymentEnvironment))
         {
             _ = resourceBuilder.AddAttributes(new KeyValuePair<string, object>[]
             {
-                new ("deployment.environment", options.Resource.DeploymentEnvironment),
+                new ("deployment.environment.name", resourceOptions.DeploymentEnvironment),
+                new ("deployment.environment", resourceOptions.DeploymentEnvironment),
             });
         }
 
-        if (options.Resource.Attributes.Count > 0)
+        if (resourceOptions.Attributes.Count > 0)
         {
-            _ = resourceBuilder.AddAttributes(options.Resource.Attributes);
+            _ = resourceBuilder.AddAttributes(resourceOptions.Attributes);
         }
 
         return resourceBuilder;
