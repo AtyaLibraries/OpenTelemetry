@@ -1,33 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Atya.Build.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Atya.Diagnostics.OpenTelemetry</AssemblyName>
+    <TargetFramework>net10.0</TargetFramework>
     <PackageId>Atya.Diagnostics.OpenTelemetry</PackageId>
+    <AssemblyName>Atya.Diagnostics.OpenTelemetry</AssemblyName>
     <RootNamespace>Atya.Diagnostics.OpenTelemetry</RootNamespace>
     <IsPackable>true</IsPackable>
-
-    <MinVerTagPrefix>v</MinVerTagPrefix>
-    <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
-    <MinVerSkip Condition="'$(RepositoryHasGitDirectory)' != 'true' Or '$(AllowPackWithoutGit)' == 'true'">true</MinVerSkip>
-    <!-- Local non-git pack fallback only; CI and release workflows pass PackageVersion explicitly. -->
-    <PackageVersion Condition="('$(RepositoryHasGitDirectory)' != 'true' Or '$(AllowPackWithoutGit)' == 'true') And '$(PackageVersion)' == '' And '$(Version)' == ''">1.0.0</PackageVersion>
-    <!-- Stable 1.0.0 intentionally includes prerelease EF Core and gRPC OpenTelemetry instrumentation dependencies. -->
+    <Authors>Arsen Asulyan</Authors>
+    <Copyright>Copyright (c) 2026 Arsen Asulyan</Copyright>
+    <Description>OpenTelemetry configuration and instrumentation helpers for Atya diagnostics packages.</Description>
+    <PackageTags>dotnet;diagnostics;opentelemetry;observability;atya</PackageTags>
+    <RepositoryUrl>https://github.com/AtyaLibraries/OpenTelemetry</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
-    <!-- Set PackageValidationBaselineVersion after 1.0.0 is published. -->
+
+    <!-- MinVer derives the version from git tags (e.g. tag `v1.2.3` -> 1.2.3). -->
+    <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\" />
-    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="" Visible="false" />
   </ItemGroup>
 
-  <ItemGroup Label="Analyzers + versioning (build-only, not published)">
-    <PackageReference Include="Atya.Governance.CodeQuality" PrivateAssets="all" />
-    <PackageReference Include="MinVer" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
+  <ItemGroup Label="Runtime dependencies">
     <PackageReference Include="Atya.Diagnostics.Observation" />
     <PackageReference Include="Atya.Foundation.Guards" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
