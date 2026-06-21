@@ -7,6 +7,7 @@
     <RootNamespace>Atya.Diagnostics.OpenTelemetry</RootNamespace>
     <IsPackable>true</IsPackable>
     <PackageValidationBaselineVersion>1.0.1</PackageValidationBaselineVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <Authors>Arsen Asulyan</Authors>
     <Copyright>Copyright (c) 2026 Arsen Asulyan</Copyright>
     <Description>OpenTelemetry configuration and instrumentation helpers for Atya diagnostics packages.</Description>
