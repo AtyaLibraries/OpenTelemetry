@@ -26,7 +26,7 @@ public sealed class OpenTelemetryHostIntegrationTests
 
         using var host = builder.Build();
 
-        await host.StartAsync();
+        await host.StartAsync(TestContext.Current.CancellationToken);
         try
         {
             var hostedServices = host.Services.GetServices<IHostedService>().ToArray();
@@ -38,7 +38,7 @@ public sealed class OpenTelemetryHostIntegrationTests
         }
         finally
         {
-            await host.StopAsync();
+            await host.StopAsync(TestContext.Current.CancellationToken);
         }
     }
 
