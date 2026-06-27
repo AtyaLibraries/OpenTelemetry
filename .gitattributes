@@ -25,4 +25,3 @@ artifacts/**    linguist-generated=true
 samples/**      linguist-documentation=true
 benchmarks/**   linguist-documentation=true
 .github/**      linguist-vendored=true
-build/**        linguist-vendored=true

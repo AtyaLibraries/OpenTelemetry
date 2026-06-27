@@ -4,9 +4,9 @@
     "net10.0": {
       "Atya.Governance.Testing": {
         "type": "Direct",
-        "requested": "[1.0.0, )",
-        "resolved": "1.0.0",
-        "contentHash": "ji59qiODBvtHjKHgMMwQzSIHCJnEnFC/AITfC1CB+vf/elx04202Edg2nxdxDAlhOmMINWL5DV6zBEsaJTJYeg=="
+        "requested": "[1.1.0, )",
+        "resolved": "1.1.0",
+        "contentHash": "Ka6Kq9/HQlxVLUWvgxVXjT07FxwKAOWNcLmoPPkOGm9i27d7tOIRRrmK2MlKr8Kfi5x2EGYz56E21iVIytYMUw=="
       },
       "coverlet.collector": {
         "type": "Direct",
@@ -147,7 +147,7 @@
       "Atya.Diagnostics.Metrics": {
         "type": "Transitive",
         "resolved": "1.0.1",
-        "contentHash": "1H70t3SEcoxIPI1bD/i9Y7+NnOnAMM3YqwuK1DpHoqH+aqX5RIbDOarACJ60oyhz6HjIIGTiypN4GqhgDzRmtg==",
+        "contentHash": "1Gft0fZcm8ZerA6/IKULYzOQ6iagqhikRosz6RyO/23rq8gyTJ+dLZZTDZCYHEc13ohsNkWwRjaoYpgtccNZ1w==",
         "dependencies": {
           "Atya.Foundation.Guards": "1.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
