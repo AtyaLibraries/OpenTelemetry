@@ -87,6 +87,18 @@ internal sealed class OrderProcessor(
     IActivitySourceAccessor activitySource,
     IMeterAccessor meter)
 {
+    private static readonly Action<ILogger, string, string, Exception?> ProcessingOrder =
+        LoggerMessage.Define<string, string>(
+            LogLevel.Information,
+            new EventId(1000, nameof(ProcessingOrder)),
+            "Processing order {OrderId} for tenant {TenantId}");
+
+    private static readonly Action<ILogger, string, Exception?> OrderProcessedSuccessfully =
+        LoggerMessage.Define<string>(
+            LogLevel.Information,
+            new EventId(1001, nameof(OrderProcessedSuccessfully)),
+            "Order {OrderId} processed successfully");
+
     private readonly ILogger<OrderProcessor> _logger = logger;
     private readonly IActivitySourceAccessor _activitySource = activitySource;
     private readonly IMeterAccessor _meter = meter;
@@ -101,7 +113,7 @@ internal sealed class OrderProcessor(
             .SetTenantId(tenantId)
             .SetEntity("Order", orderId));
 
-        _logger.LogInformation("Processing order {OrderId} for tenant {TenantId}", orderId, tenantId);
+        ProcessingOrder(_logger, orderId, tenantId, null);
 
         // Simulate work.
         Thread.Sleep(50);
@@ -120,6 +132,6 @@ internal sealed class OrderProcessor(
 
         _ = (activity?.MarkSuccess());
 
-        _logger.LogInformation("Order {OrderId} processed successfully", orderId);
+        OrderProcessedSuccessfully(_logger, orderId, null);
     }
 }
