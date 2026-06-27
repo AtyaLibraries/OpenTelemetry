@@ -47,7 +47,6 @@ packages/
 
 # Repository-local generated output
 artifacts/
-**/artifacts/
 
 # Generated files
 *.generated.cs
