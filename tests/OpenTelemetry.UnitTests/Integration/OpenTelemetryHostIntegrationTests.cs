@@ -7,6 +7,12 @@ namespace OpenTelemetry.UnitTests.Integration;
 
 public sealed class OpenTelemetryHostIntegrationTests
 {
+    private static readonly Action<ILogger, Exception?> OpenTelemetryLoggingPipelineStarted =
+        LoggerMessage.Define(
+            LogLevel.Information,
+            new EventId(1000, nameof(OpenTelemetryLoggingPipelineStarted)),
+            "OpenTelemetry logging pipeline started.");
+
     [Fact]
     public async Task AddAtyaOpenTelemetry_Should_Start_And_Stop_OpenTelemetry_Hosted_Service()
     {
@@ -32,7 +38,7 @@ public sealed class OpenTelemetryHostIntegrationTests
             var hostedServices = host.Services.GetServices<IHostedService>().ToArray();
             var logger = host.Services.GetRequiredService<ILogger<OpenTelemetryHostIntegrationTests>>();
 
-            logger.LogInformation("OpenTelemetry logging pipeline started.");
+            OpenTelemetryLoggingPipelineStarted(logger, null);
 
             _ = hostedServices.Should().NotBeEmpty();
         }

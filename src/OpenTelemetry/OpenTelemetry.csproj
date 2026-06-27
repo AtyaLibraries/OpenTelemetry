@@ -1,28 +1,32 @@
-<Project Sdk="Atya.Build.Sdk">
+﻿<Project Sdk="Atya.Build.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
     <PackageId>Atya.Diagnostics.OpenTelemetry</PackageId>
     <AssemblyName>Atya.Diagnostics.OpenTelemetry</AssemblyName>
     <RootNamespace>Atya.Diagnostics.OpenTelemetry</RootNamespace>
     <IsPackable>true</IsPackable>
     <PackageValidationBaselineVersion>1.0.1</PackageValidationBaselineVersion>
     <Authors>Arsen Asulyan</Authors>
+    <Company>Atya</Company>
     <Copyright>Copyright (c) 2026 Arsen Asulyan</Copyright>
     <Description>OpenTelemetry configuration and instrumentation helpers for Atya diagnostics packages.</Description>
     <PackageTags>dotnet;diagnostics;opentelemetry;observability;atya</PackageTags>
     <RepositoryUrl>https://github.com/AtyaLibraries/OpenTelemetry</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
-    <NoWarn>$(NoWarn);NU5104</NoWarn>
 
     <!-- MinVer derives the version from git tags (e.g. tag `v1.2.3` -> 1.2.3). -->
+    <MinVerTagPrefix>v</MinVerTagPrefix>
     <MinVerMinimumMajorMinor>1.0</MinVerMinimumMajorMinor>
     <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="" />
-    <None Include="..\..\LICENSE" Pack="true" PackagePath="" Visible="false" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup Label="Test visibility">
+    <InternalsVisibleTo Include="OpenTelemetry.UnitTests" />
   </ItemGroup>
 
   <ItemGroup Label="Runtime dependencies">
