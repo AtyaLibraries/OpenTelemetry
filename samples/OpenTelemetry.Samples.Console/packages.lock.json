@@ -67,7 +67,7 @@
       "Atya.Diagnostics.Metrics": {
         "type": "Transitive",
         "resolved": "1.0.1",
-        "contentHash": "1Gft0fZcm8ZerA6/IKULYzOQ6iagqhikRosz6RyO/23rq8gyTJ+dLZZTDZCYHEc13ohsNkWwRjaoYpgtccNZ1w==",
+        "contentHash": "1H70t3SEcoxIPI1bD/i9Y7+NnOnAMM3YqwuK1DpHoqH+aqX5RIbDOarACJ60oyhz6HjIIGTiypN4GqhgDzRmtg==",
         "dependencies": {
           "Atya.Foundation.Guards": "1.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
