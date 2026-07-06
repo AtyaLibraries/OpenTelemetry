@@ -286,7 +286,7 @@
         "type": "Project",
         "dependencies": {
           "Atya.Diagnostics.Observation": "[1.0.1, )",
-          "Atya.Foundation.Guards": "[1.0.0, )",
+          "Atya.Foundation.Guards": "[1.0.2, )",
           "Microsoft.Extensions.Configuration.Abstractions": "[10.0.8, )",
           "Microsoft.Extensions.Configuration.Binder": "[10.0.8, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.8, )",
@@ -317,9 +317,9 @@
       },
       "Atya.Foundation.Guards": {
         "type": "CentralTransitive",
-        "requested": "[1.0.0, )",
-        "resolved": "1.0.0",
-        "contentHash": "hLGlr7iPEAVMFEzNf2yGxEuJld/UGwBuC16TGyw3EGYrTQYf1ub3y24eoiFB4BGLQQDw1ll9hPoAdgVdJQEifQ=="
+        "requested": "[1.0.2, )",
+        "resolved": "1.0.2",
+        "contentHash": "pK0hllKNECWmAK1XInrp94OSon9NFnbkPL/P37WzUD1riSR/AuaeRo0/VkPP8fw6KuAR3IrqsIHNv2l+soKBhA=="
       },
       "Microsoft.Extensions.Configuration": {
         "type": "CentralTransitive",
