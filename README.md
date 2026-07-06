@@ -13,7 +13,7 @@ OpenTelemetry is the repository for the `Atya.Diagnostics.OpenTelemetry` NuGet p
 | License | MIT |
 | Target framework | net10.0 |
 
-This package provides host-facing OpenTelemetry SDK setup, instrumentation registration, resource metadata, and OTLP exporter configuration for Atya diagnostics packages.
+This package provides host-facing OpenTelemetry SDK setup, stable instrumentation registration, resource metadata, and OTLP exporter configuration for Atya diagnostics packages.
 
 ## Layout
 
@@ -62,4 +62,20 @@ Package-specific usage guidance lives in `src/OpenTelemetry/README.md`.
 ## Release
 
 Production publishing is handled by `.github/workflows/publish-nuget.yml`.
-Release versions use stable SemVer such as `v1.0.0`. Publishing is deliberate: the workflow runs only for stable version tags or manual dispatch. It restores, audits, formats, builds, tests with coverage, packs with validation, uploads `.nupkg` and `.snupkg` artifacts, pushes to NuGet, creates the version tag when needed, and creates the GitHub release. EF Core and gRPC OpenTelemetry instrumentations currently remain upstream prerelease dependencies; that dependency exception is intentional for the `1.0.0` package line.
+Release versions use stable SemVer such as `v1.0.0`. Publishing is deliberate: the workflow runs only for stable version tags or manual dispatch. It restores, audits, formats, builds, tests with coverage, packs with validation, uploads `.nupkg` and `.snupkg` artifacts, pushes to NuGet, creates the version tag when needed, and creates the GitHub release.
+
+EF Core and gRPC OpenTelemetry instrumentation packages are prerelease upstream packages, so this package does not reference or register them. Consumers that need those instrumentations should add and register them in the application:
+
+```shell
+dotnet add package OpenTelemetry.Instrumentation.EntityFrameworkCore --prerelease
+dotnet add package OpenTelemetry.Instrumentation.GrpcNetClient --prerelease
+```
+
+```csharp
+services.AddOpenTelemetry()
+    .WithTracing(tracing =>
+    {
+        tracing.AddEntityFrameworkCoreInstrumentation();
+        tracing.AddGrpcClientInstrumentation();
+    });
+```

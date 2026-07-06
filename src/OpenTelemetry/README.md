@@ -33,9 +33,6 @@ services.AddAtyaOpenTelemetry(options =>
     options.Instrumentations.HttpClient.Enabled = true;
     options.Instrumentations.SqlClient.Enabled = true;
     options.Instrumentations.SqlClient.CaptureSqlText = false;
-    options.Instrumentations.EntityFrameworkCore.Enabled = true;
-    options.Instrumentations.EntityFrameworkCore.CaptureSqlText = false;
-    options.Instrumentations.GrpcClient.Enabled = true;
     options.Instrumentations.Runtime.Enabled = true;
 
     options.Exporters.Console.Enabled = true;
@@ -81,11 +78,6 @@ Bind from the default `OpenTelemetry` configuration section:
         "Enabled": true,
         "CaptureSqlText": false
       },
-      "EntityFrameworkCore": {
-        "Enabled": true,
-        "CaptureSqlText": false
-      },
-      "GrpcClient": { "Enabled": true },
       "Runtime": { "Enabled": true }
     },
     "Exporters": {
@@ -129,7 +121,8 @@ services.AddAtyaOpenTelemetry(configuration, "Diagnostics:OpenTelemetry");
 - Observation-layer logging is disabled by default.
 - `EnableObservationLogging` registers Atya Observation logging services; it does not by itself register the OpenTelemetry logging provider.
 - ASP.NET Core, HttpClient, Runtime, console exporter, and OTLP exporter registrations are opt-in.
-- SqlClient, Entity Framework Core, and gRPC client instrumentations are opt-in.
+- SqlClient instrumentation is opt-in.
+- Entity Framework Core and gRPC client instrumentation packages are not referenced by this package because the upstream packages are prerelease-only. Applications that need them should reference and register those instrumentation packages directly.
 - SQL command text capture is disabled by default because command text can contain sensitive data.
 - The package composes `Atya.Diagnostics.Observation`; it does not define business metrics, activity names, or log catalogs.
 
@@ -151,8 +144,6 @@ Options are validated through `Microsoft.Extensions.Options`. Invalid options fa
 | ASP.NET Core | Tracing and metrics | `Instrumentations.AspNetCore.Enabled` |
 | HttpClient | Tracing and metrics | `Instrumentations.HttpClient.Enabled` |
 | SqlClient | Tracing and metrics | `Instrumentations.SqlClient.Enabled` |
-| Entity Framework Core | Tracing | `Instrumentations.EntityFrameworkCore.Enabled` |
-| gRPC client | Tracing | `Instrumentations.GrpcClient.Enabled` |
 | .NET Runtime | Metrics | `Instrumentations.Runtime.Enabled` |
 
 SQL command text capture is controlled separately:
@@ -160,9 +151,26 @@ SQL command text capture is controlled separately:
 | Setting | Effect |
 | ------- | ------ |
 | `Instrumentations.SqlClient.CaptureSqlText` | Adds SQL command text to database spans for SqlClient as `db.query.text` and `db.statement`. |
-| `Instrumentations.EntityFrameworkCore.CaptureSqlText` | Adds EF Core database command text to spans as `db.query.text` and `db.statement`. |
 
 Leave SQL text capture disabled unless queries are known not to contain secrets or regulated data and telemetry access is appropriately restricted.
+
+### Optional prerelease instrumentations
+
+Entity Framework Core and gRPC client instrumentation are intentionally left to the application because their OpenTelemetry instrumentation packages are prerelease. Add and register them in the application when that risk is acceptable:
+
+```shell
+dotnet add package OpenTelemetry.Instrumentation.EntityFrameworkCore --prerelease
+dotnet add package OpenTelemetry.Instrumentation.GrpcNetClient --prerelease
+```
+
+```csharp
+services.AddOpenTelemetry()
+    .WithTracing(tracing =>
+    {
+        tracing.AddEntityFrameworkCoreInstrumentation();
+        tracing.AddGrpcClientInstrumentation();
+    });
+```
 
 ## Supported Exporters
 
@@ -187,7 +195,7 @@ The package follows semantic versioning. Breaking public API or behavior changes
 
 Runtime dependencies are centrally managed by the repository. Consumers should keep their own OpenTelemetry and Microsoft.Extensions package set coherent, especially in applications that already reference OpenTelemetry packages directly.
 
-Entity Framework Core and gRPC client instrumentation currently depend on upstream OpenTelemetry prerelease instrumentation packages. They are included intentionally in the stable `1.0.0` package line and should be reviewed during dependency updates.
+Entity Framework Core and gRPC client instrumentation currently depend on upstream OpenTelemetry prerelease instrumentation packages. Consumers that need those instrumentations should reference and register them in the application until stable upstream packages are available.
 
 ## Support and Security
 

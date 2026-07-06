@@ -68,23 +68,6 @@ internal static class TracerProviderBuilderExtensions
             });
         }
 
-        if (instrumentations.EntityFrameworkCore.Enabled)
-        {
-            _ = builder.AddEntityFrameworkCoreInstrumentation(entityFrameworkCore =>
-            {
-                if (instrumentations.EntityFrameworkCore.CaptureSqlText)
-                {
-                    entityFrameworkCore.EnrichWithIDbCommand = (activity, command) =>
-                        DatabaseInstrumentationEnricher.EnrichWithSqlText(activity, command.CommandText);
-                }
-            });
-        }
-
-        if (instrumentations.GrpcClient.Enabled)
-        {
-            _ = builder.AddGrpcClientInstrumentation();
-        }
-
         return builder;
     }
 
