@@ -8,14 +8,24 @@ using OpenTelemetry.Exporter;
 
 namespace OpenTelemetry.Benchmarks;
 
+/// <summary>
+/// Runs the Atya.Diagnostics.OpenTelemetry benchmark suite.
+/// </summary>
 public static class Program
 {
+    /// <summary>
+    /// Executes the benchmark suite.
+    /// </summary>
+    /// <param name="args">Command-line arguments passed to BenchmarkDotNet.</param>
     public static void Main(string[] args)
     {
         _ = BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
     }
 }
 
+/// <summary>
+/// Benchmarks OpenTelemetry service registration scenarios.
+/// </summary>
 [MemoryDiagnoser]
 [RankColumn]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
@@ -25,6 +35,10 @@ public class OpenTelemetryRegistrationBenchmarks
     private static readonly Action<OpenTelemetryOptions> MinimalConfiguration = ConfigureMinimal;
     private static readonly Action<OpenTelemetryOptions> FullConfiguration = ConfigureFull;
 
+    /// <summary>
+    /// Registers options without OpenTelemetry services.
+    /// </summary>
+    /// <returns>The service count after registration.</returns>
     [Benchmark(Baseline = true)]
     public static int RegisterOptionsOnlyBaseline()
     {
@@ -35,6 +49,10 @@ public class OpenTelemetryRegistrationBenchmarks
         return services.Count;
     }
 
+    /// <summary>
+    /// Registers the minimal OpenTelemetry configuration.
+    /// </summary>
+    /// <returns>The service count after registration.</returns>
     [Benchmark]
     public static int RegisterMinimalOpenTelemetry()
     {
@@ -44,6 +62,10 @@ public class OpenTelemetryRegistrationBenchmarks
         return services.Count;
     }
 
+    /// <summary>
+    /// Registers the full OpenTelemetry configuration.
+    /// </summary>
+    /// <returns>The service count after registration.</returns>
     [Benchmark]
     public static int RegisterFullOpenTelemetry()
     {
@@ -53,6 +75,10 @@ public class OpenTelemetryRegistrationBenchmarks
         return services.Count;
     }
 
+    /// <summary>
+    /// Builds a provider from the minimal OpenTelemetry registration.
+    /// </summary>
+    /// <returns>The service count plus one when the provider resolves.</returns>
     [Benchmark]
     public static int BuildMinimalServiceProvider()
     {
