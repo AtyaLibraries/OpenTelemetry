@@ -5,7 +5,8 @@
     <AssemblyName>Atya.Diagnostics.OpenTelemetry</AssemblyName>
     <RootNamespace>Atya.Diagnostics.OpenTelemetry</RootNamespace>
     <IsPackable>true</IsPackable>
-    <PackageValidationBaselineVersion>1.0.1</PackageValidationBaselineVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PackageValidationBaselineVersion>2.0.0</PackageValidationBaselineVersion>
     <Authors>Arsen Asulyan</Authors>
     <Company>Atya</Company>
     <Copyright>Copyright (c) 2026 Arsen Asulyan</Copyright>
@@ -41,11 +42,10 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
     <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" />
   </ItemGroup>
 
 </Project>
+
