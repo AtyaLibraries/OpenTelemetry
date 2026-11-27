@@ -61,8 +61,7 @@ Package-specific usage guidance lives in `src/OpenTelemetry/README.md`.
 
 ## Release
 
-Production publishing is handled by `.github/workflows/publish-nuget.yml`.
-Release versions use stable SemVer such as `v1.0.0`. Publishing is deliberate: the workflow runs only for stable version tags or manual dispatch. It restores, audits, formats, builds, tests with coverage, packs with validation, uploads `.nupkg` and `.snupkg` artifacts, pushes to NuGet, creates the version tag when needed, and creates the GitHub release.
+Release versions use stable SemVer such as `v1.0.0`. Releases are published by the central publisher, not by a workflow in this repository. After promoting `development` to `master` and tagging the `master` commit, a maintainer runs `gh workflow run publish.yml --repo AtyaLibraries/publisher -f repository=AtyaLibraries/OpenTelemetry -f ref=<tag>`; see the publisher RUNBOOK (https://github.com/AtyaLibraries/publisher/blob/main/docs/RUNBOOK.md).
 
 EF Core and gRPC OpenTelemetry instrumentation packages are prerelease upstream packages, so this package does not reference or register them. Consumers that need those instrumentations should add and register them in the application:
 
